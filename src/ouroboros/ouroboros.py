@@ -5,24 +5,29 @@ import shutil
 import uuid
 import warnings
 from collections.abc import MutableMapping, MutableSequence
-from typing import Any, Iterator, Sequence
+from importlib import metadata
+from time import sleep
+from typing import Any, Iterator, Sequence, Literal
 from uuid import uuid4
 
 import geojson
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import pyogrio
 import pyproj
 import shapely
+import xmltodict
+from matplotlib import pyplot as plt
+
+
+__version__ = metadata.version("ouroboros-gis")
+
 from pyogrio.errors import DataSourceError
-
-
-version = "1.0.5"  # TODO autoupdate versioneer
 
 # Check for optional install of GDAL>=3.8 for raster support
 try:
     from osgeo import gdal  # noqa # fmt: skip
+
     _gdal_installed = True
     _gdal_version = gdal.__version__
 except ModuleNotFoundError:
@@ -43,7 +48,7 @@ pd.set_option("display.max_colwidth", None)
 
 class FeatureClass(MutableSequence):
     """
-    The FeatureClass acts as a custom container built on top of the :class:`geopandas.GeoDataFrame`,
+    The FeatureClass acts as a custom container built on top of geopandas.GeoDataFrame,
     allowing operations like accessing, modifying, appending, and deleting geospatial data
     while maintaining properties like CRS (Coordinate Reference System) and geometry type.
     """
@@ -70,12 +75,8 @@ class FeatureClass(MutableSequence):
         :raises TypeError: Raised when the provided source type is unsupported or invalid
 
         """
-        #: The attribute that references the data object of the FeatureClass
-        self._data: gpd.GeoDataFrame | None = None  # noqa
-        #: The Coordinate Reference System of the FeatureClass, defaults to :code:`None`
-        self.crs: pyproj.crs.CRS | None = None
-        #: The geometry type of the FeatureClass, e.g., :class:`shapely.Point`, :class:`shapely.LineString`, :class:`shapely.Polygon`; defaults to :code:`None`
-        self.geom_type: shapely.Geometry | None = None
+        self._data: gpd.GeoDataFrame | None = None
+        self._geom_type: type[shapely.Geometry] | None = None
 
         # parse src
         if isinstance(src, gpd.GeoDataFrame):
@@ -84,7 +85,7 @@ class FeatureClass(MutableSequence):
         elif isinstance(src, gpd.GeoSeries):
             self._data = gpd.GeoDataFrame(geometry=src.copy(deep=True))
 
-        elif isinstance(src, pd.DataFrame) | isinstance(src, pd.Series):
+        elif isinstance(src, pd.DataFrame) or isinstance(src, pd.Series):
             self._data = gpd.GeoDataFrame(src.copy(deep=True))
 
         elif isinstance(src, FeatureClass):
@@ -119,23 +120,7 @@ class FeatureClass(MutableSequence):
         else:
             raise TypeError((src, type(src)))
 
-        self._data.index.name = "ObjectID"
-
-        try:
-            self.crs = self._data.crs
-        except AttributeError:
-            self.crs = None
-
-        # parse geometry type
-        try:
-            geom_types = self._data.geom_type.unique()
-            if len(geom_types) == 1 and geom_types[0] is None:
-                self.geom_type = None
-            elif len(geom_types) == 1 and geom_types[0] is not None:
-                self.geom_type = geom_types[0]
-
-        except AttributeError:
-            self.geom_type = None
+        self._geom_type, self._data = sanitize_gdf_geometry(self._data)
 
     def __delitem__(self, index) -> None:
         """
@@ -150,7 +135,6 @@ class FeatureClass(MutableSequence):
             If the provided index is not an integer
 
         """
-        # noinspection PyUnreachableCode
         if not isinstance(index, int):
             raise TypeError("index must be an integer")
         self._data = pd.concat(
@@ -245,10 +229,8 @@ class FeatureClass(MutableSequence):
 
         """
         row, column = index
-        # noinspection PyUnreachableCode
         if not isinstance(row, int):
             raise TypeError("Row index must be an integer")
-        # noinspection PyUnreachableCode
         if not isinstance(column, int) and not isinstance(column, str):
             raise TypeError("Column index must be an integer or a column name string")
 
@@ -256,6 +238,39 @@ class FeatureClass(MutableSequence):
             self._data.iat[row, column] = value
         else:
             self._data.at[row, column] = value
+
+    @property
+    def crs(self) -> pyproj.crs.CRS | None:
+        """
+        :return: The Coordinate Reference System (CRS) of the FeatureClass, defaults to :code:`None`
+
+        """
+        try:
+            return self._data.crs
+        except AttributeError:
+            return None
+
+    @property
+    def geom_type(self) -> None | shapely.Geometry:
+        """
+        The geometry type of the FeatureClass, e.g., :class:`shapely.Point`, :class:`shapely.LineString`, :class:`shapely.Polygon`; defaults to :code:`None`
+
+        :return:
+        """
+        return self._geom_type
+
+    @property
+    def geometry(self) -> None | gpd.GeoSeries:
+        """
+        Accessor for the geometry of the FeatureClass
+
+        :rtype: None | geopandas.GeoSeries
+
+        """
+        if self._data.active_geometry_name:
+            return self._data.geometry
+        else:
+            return None
 
     # noinspection PyTypeHints
     def append(self, value: "gpd.GeoDataFrame | FeatureClass") -> None:
@@ -380,36 +395,6 @@ class FeatureClass(MutableSequence):
         """
         return FeatureClass(self._data.copy(deep=True))
 
-    def describe(self) -> dict:
-        """
-        Provides a detailed description of the dataset, including its spatial reference
-        system, fields, geometry type, index name, and row count.
-
-        The returned dictionary contains the following keys:
-
-            * `crs`: The name of the Coordinate Reference System (CRS) if defined; otherwise, None
-            * `fields`: A list of field names in the dataset
-            * `geom_type`: The geometry type of the dataset
-            * `index_name`: The name of the index column of the dataset
-            * `row_count`: The number of rows in the dataset
-
-        :return: A dictionary containing dataset information
-        :rtype: dict
-
-        """
-        if self.crs is None:
-            crs = None
-        else:
-            crs = self.crs.name
-
-        return {
-            "crs": crs,
-            "fields": self.list_fields(),
-            "geom_type": self.geom_type,
-            "index_name": self._data.index.name,
-            "row_count": len(self._data),
-        }
-
     def head(self, n: int = 10, silent: bool = False) -> gpd.GeoDataFrame:
         """
         Returns the first `n` rows of the FeatureClass and prints them if `silent` is False.
@@ -446,7 +431,6 @@ class FeatureClass(MutableSequence):
         :raises ValueError: If the schema of `value` does not match the schema of the existing data
 
         """
-        # noinspection PyUnreachableCode
         if not isinstance(index, int):
             raise TypeError("Index must be an integer")
         if not isinstance(value, gpd.GeoDataFrame) and not isinstance(
@@ -457,6 +441,7 @@ class FeatureClass(MutableSequence):
             )
         if isinstance(value, FeatureClass):
             value = value.to_geodataframe()
+        value: gpd.GeoDataFrame
 
         if len(self._data.columns) >= 1:
             try:
@@ -464,32 +449,16 @@ class FeatureClass(MutableSequence):
             except ValueError:
                 raise ValueError("Schemas must match")
 
-        # parse geometry types of new features
-        new_geoms = value.geom_type.unique()
-        if len(new_geoms) == 1:
-            new_geom = new_geoms[0]
-        elif len(new_geoms) == 2:
-            if new_geoms[0].strip("Multi") == new_geoms[1].strip("Multi"):
-                new_geom = f"Multi{new_geoms[0].strip('Multi')}"
-            else:
-                raise TypeError(f"Cannot mix geometry types: {new_geoms}")
-        else:  # len(new_geoms) > 2:
-            raise TypeError(f"Cannot mix geometry types: {new_geoms}")
-
-        # validate geometry
-        if self.geom_type is not None and self.geom_type == new_geom:
-            pass
-        elif self.geom_type is None and new_geom is not None:
-            self.geom_type = new_geom
-        elif self.geom_type is None and new_geom is None:
-            self.geom_type = None
-        else:  # promote to Multi- type geometry (MultiPoint etc)
-            self.geom_type: str
-            simple_type = self.geom_type.strip("Multi")
-            if new_geom.strip("Multi") != simple_type:
-                raise TypeError(f"Geometry must be {simple_type} or Multi{simple_type}")
-            else:
-                self.geom_type = f"Multi{simple_type}"
+        # validate incoming geometry
+        new_geom_type, value = sanitize_gdf_geometry(value)
+        if self._geom_type is None:
+            self._geom_type = new_geom_type
+        elif self._geom_type != new_geom_type:
+            raise TypeError(
+                f"Geometry type must be {self._geom_type}, not {new_geom_type}"
+            )
+        else:
+            assert self._geom_type == new_geom_type
 
         # insert features into dataframe
         if index == 0:
@@ -498,7 +467,9 @@ class FeatureClass(MutableSequence):
             c = [self._data, value]
         else:
             c = [self._data.iloc[:index], value, self._data.iloc[index:]]
-        self._data = pd.concat(c, ignore_index=True)  # will reindex after concat
+        self._data = pd.concat(
+            c, ignore_index=True
+        )  # pandas will automatically reindex after concatenating
 
     def list_fields(self) -> list[str]:
         """
@@ -546,6 +517,18 @@ class FeatureClass(MutableSequence):
             feature_dataset=feature_dataset,
             overwrite=overwrite,
         )
+
+    def show(self, block: bool = True):
+        """
+        Display the geometry in a simple Matplotlib plot
+
+        :param block: If True, waits for user to close the plot, defaults to True
+        :type block: bool, optional
+        """
+        fig, ax = plt.subplots()
+        self._data.geometry.plot(ax=ax)
+        plt.show(block=block)
+        plt.close()
 
     def select_columns(
         self, columns: str | Sequence[str], geometry: bool = True
@@ -596,13 +579,20 @@ class FeatureClass(MutableSequence):
         :param expr: The query expression to use for filtering the rows
         :type expr: str
 
-        Example::
+        Examples::
 
-            fc.query("colA > colB")
+            fc.select_rows("colA > colB")
 
             ObjectID    colA    colB
             42          10      9
             99          201     0
+
+
+            fc.select_rows("colA == 'spam'")
+
+            ObjectID    colA
+            1           spam
+            2           spam
 
         """
         return FeatureClass(gpd.GeoDataFrame(self._data.query(expr, inplace=False)))
@@ -829,7 +819,6 @@ class FeatureDataset(MutableMapping):
         :raises AttributeError: If the CRS of the FeatureDataset and FeatureClass do not match
 
         """
-        # noinspection PyUnreachableCode
         if not isinstance(value, FeatureClass):
             raise TypeError(f"Expected type ouroboros.FeatureClass: {value}")
 
@@ -982,7 +971,6 @@ class GeoDatabase(MutableMapping):
         :raises IndexError: If the integer-based index is out of range
 
         """
-        # noinspection PyUnreachableCode
         if not isinstance(key, int) and not isinstance(key, str) and key is not None:
             raise KeyError(f"Expected key to be an integer or string: {key}")
 
@@ -1051,7 +1039,6 @@ class GeoDatabase(MutableMapping):
         :raises KeyError: If the key being added as a FeatureDataset already exists
 
         """
-        # noinspection PyUnreachableCode
         if isinstance(value, FeatureClass):
             try:
                 crs = value.to_geodataframe().crs
@@ -1167,6 +1154,49 @@ class GeoDatabase(MutableMapping):
                 )
 
 
+def buffer(fc: FeatureClass, distance: float, **kwargs: dict) -> FeatureClass:
+    """
+    Buffer a feature class by a specified distance
+
+    Wraps geopandas.GeoSeries.buffer()
+
+    :param fc: Input feature class to buffer
+    :type fc: FeatureClass
+    :param distance: Buffer distance in the units of the feature class's CRS
+    :type distance: float
+    :param kwargs: Keyword arguments of `geopandas.GeoSeries.buffer <https://geopandas.org/docs/reference/api/geopandas.GeoSeries.buffer.html>`__
+    :type kwargs: dict
+
+    :return: The buffered feature class
+    :rtype: FeatureClass
+
+    """
+    gdf = fc.to_geodataframe()
+    new_geom = gdf.buffer(distance=distance, **kwargs)
+    gdf.set_geometry(new_geom, inplace=True)
+    return FeatureClass(gdf)
+
+
+# noinspection PyProtectedMember
+def clip(fc: FeatureClass, mask_fc: FeatureClass, **kwargs: dict) -> FeatureClass:
+    """
+    Clip a feature class by a mask feature class.
+
+    Wraps geopandas.clip()
+
+    :param fc: Input feature class to be clipped
+    :type fc: FeatureClass
+    :param mask_fc: Feature class to use as the clipping boundary
+    :type mask_fc: FeatureClass
+    :param kwargs: Keyword arguments of `geopandas.clip <https://geopandas.org/docs/reference/api/geopandas.clip.html>`__
+    :type kwargs: dict
+    :return: The clipped feature class
+    :rtype: FeatureClass
+    """
+    gdf = gpd.clip(gdf=fc._data, mask=mask_fc._data, **kwargs)
+    return FeatureClass(gdf)
+
+
 def fc_to_gdf(
     gdb_path: os.PathLike | str,
     fc_name: str,
@@ -1185,10 +1215,9 @@ def fc_to_gdf(
     :return: A GeoDataFrame representation of the feature class, with "ObjectID" set as the index
     :rtype: geopandas.GeoDataFrame
 
-    :raises TypeError: If the feature class name (`fc_name`) is not a string
+    :raises TypeError: If `fc_name` is not a string
 
     """
-    # noinspection PyUnreachableCode
     if not isinstance(fc_name, str):
         raise TypeError("Feature class name must be a string")
 
@@ -1200,9 +1229,8 @@ def fc_to_gdf(
     return gdf
 
 
-# noinspection PyTypeHints
 def gdf_to_fc(
-    gdf: gpd.GeoDataFrame | gpd.GeoSeries,
+    gdf: gpd.GeoDataFrame | gpd.GeoSeries,  # noqa
     gdb_path: os.PathLike | str,
     fc_name: str,
     feature_dataset: str = None,
@@ -1299,43 +1327,48 @@ def get_info(gdb_path: os.PathLike | str) -> dict:
     if not os.path.isdir(gdb_path):
         raise TypeError(f"{gdb_path} is not a directory")
 
-    fc_info = {fc: pyogrio.read_info(gdb_path, fc) for fc in list_layers(gdb_path)}
+    result = dict()
 
-    fds_info = {
-        ds: {"contents": list(fcs)} for ds, fcs in list_datasets(gdb_path).items()
-    }
-    # remove placeholder None dataset
-    if None in fds_info:
-        del fds_info[None]
-    # get crs of the first feature class
-    for ds_name, ds_info in fds_info.items():
-        if len(ds_info["contents"]) >= 1:
-            ds_info["crs"] = fc_info[ds_info["contents"][0]]["crs"]
+    with open(os.path.join(os.path.abspath(gdb_path), "a00000004.gdbtable"), "rb") as f:
+        gdbtable = f.read()
 
-    result = {"FeatureClass": fc_info, "FeatureDataset": fds_info}
+        for root_name in [
+            "DEFeatureClassInfo",
+            "DEFeatureDataset",
+            "DERasterDataset",
+            "DETableInfo",
+            "DEWorkspace",
+            "ESRI_ItemInformation",
+            "metadata",
+            "typens:DEFeatureClassInfo",
+            "typens:DEFeatureDataset",
+            "typens:DERasterDataset",
+            "typens:DETableInfo",
+            "typens:DEWorkspace",
+            "typens:ESRI_ItemInformation",
+            "typens:metadata",
+        ]:
+            start_pos = 0
+            while True:
+                start_pos = gdbtable.find(bytes(f"<{root_name} ", "utf-8"), start_pos)
+                end_pos = gdbtable.find(bytes(f"</{root_name}>", "utf-8"), start_pos)
+                if start_pos == -1 or end_pos == -1:  # stop loop at the end of the file
+                    break
+                end_pos = end_pos + len(f"</{root_name}>")
+                match = gdbtable[start_pos:end_pos].decode("utf-8")
+                start_pos = end_pos
 
-    raster_info = dict()
-    if _gdal_installed:
-        gdal.UseExceptions()
-        for raster_name in list_rasters(gdb_path):
-            raster: gdal.Dataset
-            with gdal.Open(f"OpenFileGDB:{gdb_path}:{raster_name}") as raster:
-                raster_info[raster_name] = {
-                    "block_size": raster.GetRasterBand(1).GetBlockSize(),
-                    "crs": f"EPSG:{pyproj.crs.CRS(raster.GetProjectionRef()).to_epsg()}",
-                    "category_names": raster.GetRasterBand(1).GetRasterCategoryNames(),
-                    "color_interpretation": raster.GetRasterBand(
-                        1
-                    ).GetRasterColorInterpretation(),
-                    "dataset_metadata": raster.GetMetadata_Dict(),
-                    "nodata_value": raster.GetRasterBand(1).GetNoDataValue(),
-                    "raster_count": raster.RasterCount,
-                    "unit": raster.GetRasterBand(1).GetUnitType(),
-                    "x_size": raster.RasterXSize,
-                    "y_size": raster.RasterYSize,
-                }
+                xml_dict = xmltodict.parse(match)[root_name]
 
-    result["RasterDataset"] = raster_info
+                root_name = (
+                    root_name.replace("typens:", "")
+                    .replace("DE", "")
+                    .replace("Table", "")
+                    .replace("Info", "")
+                )
+                if root_name not in result:
+                    result[root_name] = list()
+                result[root_name].append(xml_dict)
 
     return result
 
@@ -1459,6 +1492,36 @@ def list_rasters(gdb_path: os.PathLike | str) -> list[str]:
     return rasters
 
 
+# noinspection PyProtectedMember
+def overlay(
+    fc1: FeatureClass,
+    fc2: FeatureClass,
+    how: Literal[
+        "intersection", "union", "identity", "symmetric_difference", "difference"
+    ] = "intersection",
+    **kwargs: dict,
+) -> FeatureClass:
+    """
+    Perform a spatial overlay between two FeatureClasses
+
+    Wraps geopandas.overlay(), see the documentation for more details on the different `overlay methods <https://geopandas.org/en/stable/docs/user_guide/set_operations.html>`__
+
+    :param fc1: First input feature class to be used in the overlay operation
+    :type fc1: FeatureClass
+    :param fc2: Second input feature class
+    :type fc2: FeatureClass
+    :param how: Method of spatial overlay
+    :type how: str, defaults to :code:`intersection`
+    :param kwargs: Keyword arguments of `geopandas.overlay <https://geopandas.org/docs/reference/api/geopandas.overlay.html>`__
+    :type kwargs: dict
+    :return: The clipped feature class
+    :rtype: FeatureClass
+    """
+    gdf = gpd.overlay(fc1._data, fc2._data, how=how, **kwargs)
+    return FeatureClass(gdf)
+
+
+# PYNoinspection
 def raster_to_tif(
     gdb_path: os.PathLike | str,
     raster_name: str,
@@ -1499,7 +1562,6 @@ def raster_to_tif(
     if not tif_path.endswith(".tif"):
         tif_path += ".tif"
 
-    # with _open_gdb(gdb_path) as gdb:
     gdal.UseExceptions()
     with gdal.Open(f"OpenFileGDB:{gdb_path}:{raster_name}") as raster:
         tif_drv: gdal.Driver = gdal.GetDriverByName("GTiff")
@@ -1507,3 +1569,154 @@ def raster_to_tif(
             tif_drv.CreateCopy(tif_path, raster, strict=0, options=options)
         else:
             tif_drv.CreateCopy(tif_path, raster, strict=0)
+
+
+def sanitize_gdf_geometry(
+    gdf: gpd.GeoDataFrame,
+) -> tuple[
+    Literal[
+        "Point",
+        "MultiPoint",
+        "LineString",
+        "MultiLineString",
+        "Polygon",
+        "MultiPolygon",
+        None,
+    ],
+    gpd.GeoDataFrame,
+]:
+    """
+    Sanitizes the geometry column of a GeoDataFrame for compatibility with feature class geometries.
+
+    This function accepts a GeoDataFrame and attempts to standardize the geometry types
+    within the active geometry column. If the geometry column has only one consistent geometry
+    type, it returns that type. Alternately, the function resolves simple two-type geometries
+    (e.g., `Polygon` and `MultiPolygon`) to a multi-type geometry.
+
+    :param gdf: The GeoDataFrame whose geometries need to be sanitized
+    :type gdf: geopandas.GeoDataFrame
+
+    :return: A tuple containing the resolved geometry type (e.g., `Point`, `MultiLineString`,
+      etc.) or `None` and the modified GeoDataFrame with sanitized geometries
+    :rtype: tuple[Literal["Point", "MultiPoint", "LineString", "MultiLineString", "Polygon",
+      "MultiPolygon", None], geopandas.GeoDataFrame]
+
+    :raises TypeError: If the input is not a GeoDataFrame or if the GeoDataFrame contains unsupported or too many geometry types
+    """
+    if not isinstance(gdf, gpd.GeoDataFrame):
+        raise TypeError("Input must be a GeoDataFrame")
+
+    gdf.index.name = "ObjectID"
+
+    if len(gdf) == 0 or gdf.active_geometry_name is None:
+        return None, gdf
+
+    geoms: list = gdf.geom_type.unique().tolist()
+    if None in geoms:
+        geoms.remove(None)
+
+    if "GeometryCollection" in geoms:
+        raise TypeError(
+            "Cannot sanitize a GeoDataFrame with GeometryCollection geometries"
+        )
+
+    if len(geoms) == 0:
+        return None, gdf
+
+    elif len(geoms) == 1:
+        return geoms[0], gdf
+
+    elif len(geoms) == 2:
+        if "Point" in geoms and "MultiPoint" in geoms:
+            new_geom = list()
+            for feature in gdf[gdf.active_geometry_name]:
+                if feature is None:
+                    new_geom.append(shapely.MultiPoint())
+                elif isinstance(feature, shapely.Point):
+                    try:
+                        new_geom.append(shapely.MultiPoint([feature]))
+                    except shapely.errors.EmptyPartError:
+                        new_geom.append(shapely.MultiPoint())
+                else:
+                    new_geom.append(feature)
+            gdf[gdf.active_geometry_name] = new_geom
+            return "MultiPoint", gdf
+
+        elif "LineString" in geoms and "LinearRing" in geoms:
+            new_geom = list()
+            for feature in gdf[gdf.active_geometry_name]:
+                if feature is None:
+                    new_geom.append(shapely.LineString())
+                elif isinstance(feature, shapely.LinearRing):
+                    new_geom.append(shapely.LineString(feature))
+                else:
+                    new_geom.append(feature)
+            gdf[gdf.active_geometry_name] = new_geom
+            return "LineString", gdf
+
+        elif "MultiLineString" in geoms and (
+            "LineString" in geoms or "LinearRing" in geoms
+        ):
+            new_geom = list()
+            for feature in gdf[gdf.active_geometry_name]:
+                if feature is None:
+                    new_geom.append(shapely.MultiLineString())
+                elif isinstance(feature, shapely.LineString) or isinstance(
+                    feature, shapely.LinearRing
+                ):
+                    try:
+                        new_geom.append(shapely.MultiLineString({feature}))
+                    except shapely.errors.EmptyPartError:
+                        new_geom.append(shapely.MultiLineString())
+                else:
+                    new_geom.append(feature)
+            gdf[gdf.active_geometry_name] = new_geom
+            return "MultiLineString", gdf
+
+        elif "Polygon" in geoms and "MultiPolygon" in geoms:
+            new_geom = list()
+            for feature in gdf[gdf.active_geometry_name]:
+                if feature is None:
+                    new_geom.append(shapely.MultiPolygon())
+                elif isinstance(feature, shapely.Polygon):
+                    try:
+                        new_geom.append(shapely.MultiPolygon([{feature}]))
+                    except (shapely.errors.EmptyPartError, TypeError):
+                        new_geom.append(shapely.MultiPolygon())
+                else:
+                    new_geom.append(feature)
+            gdf[gdf.active_geometry_name] = new_geom
+            return "MultiPolygon", gdf
+
+        else:
+            raise TypeError(
+                f"Cannot sanitize a GeoDataFrame with mixed geometry types: {geoms}"
+            )
+    elif len(geoms) == 3:
+        if (
+            "LineString" in geoms
+            and "MultiLineString" in geoms
+            and "LinearRing" in geoms
+        ):
+            new_geom = list()
+            for feature in gdf[gdf.active_geometry_name]:
+                if feature is None:
+                    new_geom.append(shapely.MultiLineString())
+                elif isinstance(feature, shapely.LineString) or isinstance(
+                    feature, shapely.LinearRing
+                ):
+                    try:
+                        new_geom.append(shapely.MultiLineString([feature]))
+                    except shapely.errors.EmptyPartError:
+                        new_geom.append(shapely.MultiLineString())
+                else:
+                    new_geom.append(feature)
+            gdf[gdf.active_geometry_name] = new_geom
+            return "MultiLineString", gdf
+        else:
+            raise TypeError(
+                f"Cannot sanitize a GeoDataFrame with incompatible geometries: {geoms}"
+            )
+
+    else:  # len(geoms) >= 4:
+        raise TypeError(f"Too many geometry types to sanitize: {geoms}")

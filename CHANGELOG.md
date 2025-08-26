@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.7
+
+- sanitize_gdf_geometry() enforces compatibility with feature class geometries
+- FeatureClass.show() displays a simple plot of the geometry
+- get_info() uses xmltodict rather than GDAL
+- Fixed notebook tables in docs, added ArcPy comparison notebook
+- Test with Python 3.14.0-rc2
+
 ## v1.0.6
 
 - Bumped test docker to Python 3.14.0-rc2
