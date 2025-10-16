@@ -1,7 +1,7 @@
 # https://github.com/marketplace/actions/setup-pixi
-name: Pytest - macOS
+name: Analyze Test Coverage
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 on:
   workflow_dispatch:
@@ -9,17 +9,13 @@ on:
     branches: [ "main" ]
     paths: [ "src/**" ]
 jobs:
-  pytest:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [ test-py310-pypi, test-py311-pypi, test-py312-pypi, test-py313-pypi,
-                       test-py310-conda, test-py311-conda, test-py312-conda, test-py313-conda, test-py314-conda]
+  coverage:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: |
+            docs/pytest_coverage.json
             pixi.lock
             pixi.toml
             pyproject.toml
@@ -27,10 +23,16 @@ jobs:
             src
             tests
           sparse-checkout-cone-mode: false
-      - run: brew install proj
       - uses: prefix-dev/setup-pixi@v0.9.1
         with:
           pixi-version: v0.56.0
           cache: true
-          environments: default
-      - run: pixi run ${{ matrix.environment }}
+      - name: Run SlipCover
+        run: pixi run coverage
+      - name: Push changes
+        run: | 
+          git config --local user.email "peter@corbelspatial.com"
+          git config --local user.name "p-vdp"
+          git add ./docs/pytest_coverage.json
+          git commit -m "GitHub Action: Analyze Test Coverage"
+          git push

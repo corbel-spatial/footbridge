@@ -1,4 +1,5 @@
-name: Test Python Prerelease
+# https://github.com/marketplace/actions/setup-pixi
+name: Lint
 permissions:
   contents: read
   pull-requests: write
@@ -8,18 +9,22 @@ on:
     branches: [ "main" ]
     paths: [ "src/**" ]
 jobs:
-  test-on-prerelease:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           sparse-checkout: |
+            pixi.lock
+            pixi.toml
             pyproject.toml
             README.md
             src
             tests
           sparse-checkout-cone-mode: false
-      - run: |
-          docker run --name tester --rm -id --mount type=bind,source=./,target=/root/checkout ghcr.io/corbel-spatial/here-be-dragons:next
-          docker exec -w /root/checkout tester uv pip install --system . pytest
-          docker exec -w /root/checkout tester pytest
+      - uses: prefix-dev/setup-pixi@v0.9.1
+        with:
+          pixi-version: v0.56.0
+          cache: true
+      - name: Run Black and Ruff
+        run: pixi run lint

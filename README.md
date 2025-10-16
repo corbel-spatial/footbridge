@@ -3,15 +3,16 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ouroboros-gis)](https://pypi.org/project/ouroboros-gis/)
 [![PyPI Downloads](https://static.pepy.tech/badge/ouroboros-gis/month)](https://pepy.tech/projects/ouroboros-gis)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=)](https://github.com/corbel-spatial/ouroboros/blob/main/LICENSE)
+[![Pixi](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fprefix-dev%2Fpixi%2Fmain%2Fassets%2Fbadge%2Fv0.json&label=%E2%9C%A8)](https://pixi.sh)
 
-[![Actions Workflow Status: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/py-prerelease.yml?label=3.14-rc2
+[![Actions Workflow Status: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/py-prerelease.yml?label=3.15.0a1
 )](https://github.com/corbel-spatial/ouroboros/actions/workflows/py-prerelease.yml)
 [![GitHub Actions Workflow Status: Linux](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pytest-linux.yml?label=Linux&logo=linux&logoColor=white)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pytest-linux.yml)
 [![GitHub Actions Workflow Status: Windows](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pytest-windows.yml?label=Windows)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pytest-windows.yml)
 [![GitHub Actions Workflow Status: macOS](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pytest-macos.yml?label=macOS)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pytest-macos.yml)
-[![GitHub Actions Workflow Status: Black](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/black.yml?label=Black)](https://github.com/corbel-spatial/ouroboros/actions/workflows/black.yml)
-[![GitHub Actions Workflow Status: Pylint](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pylint.yml?label=Pylint)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pylint.yml)
-[![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcorbel-spatial%2Fouroboros%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpytest_coverage.json&query=%24.totals.percent_covered_display&suffix=%25&label=coverage&color=brightgreen)](https://raw.githubusercontent.com/corbel-spatial/ouroboros/refs/heads/main/docs/pytest_coverage.json)
+[![GitHub Actions Workflow Status: Black](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/lint.yml?label=Black%20%26%20Ruff)](https://github.com/corbel-spatial/ouroboros/actions/workflows/lint.yml)
+[![Test Coverage: SlipCover](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcorbel-spatial%2Fouroboros%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpytest_coverage.json&query=%24.summary.percent_covered_display&label=Coverage%20%25&color=brightgreen)](https://github.com/corbel-spatial/ouroboros/actions/workflows/coverage.yml)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 # ouroboros
 
@@ -35,11 +36,10 @@ which can be accessed like dictionaries. For example:
 {'spam_dataset': ['spam_fc'],
  None: ['ham_fc']}
 
-# Load a feature class and convert to GeoPandas
+# Load a feature class, the underlying data object is a GeoPandas GeoDataFrame
 
 >>> fc = ob.FeatureClass("spam_and_eggs.gdb/egg_dataset/eggs_fc")
->>> gdf = fc.to_geodataframe()
->>> type(gdf)
+>>> type(fc.gdf)
 <class 'geopandas.geodataframe.GeoDataFrame'>
 
 # Assemble a new geodatabase in memory
@@ -77,6 +77,4 @@ little more joy and beauty to the task of wrangling spatial data.
 
 ## Notes
 
-- ⚠️ This project is under active development and things may change without notice. Feedback, suggestions, and questions are welcomed in the [Issues](https://github.com/corbel-spatial/ouroboros/issues) section.
-
-- Tested on Python 3.10, 3.11, 3.12, and 3.13 on the latest Windows, Linux, and macOS (version info [here](https://github.com/actions/runner-images)).
+- ⚠️ This project is under active development and things may change without notice. The first stable version is planned to be `v1.1.0`. Feedback, suggestions, and questions are welcomed in the [Issues](https://github.com/corbel-spatial/ouroboros/issues) section.
