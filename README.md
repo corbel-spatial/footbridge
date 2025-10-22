@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=)](https://github.com/corbel-spatial/ouroboros/blob/main/LICENSE)
 [![Pixi](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fprefix-dev%2Fpixi%2Fmain%2Fassets%2Fbadge%2Fv0.json&label=%E2%9C%A8)](https://pixi.sh)
 
-[![Actions Workflow Status: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/py-prerelease.yml?label=3.15.0a1
+[![Actions Workflow Status: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/py-prerelease.yml?label=3.15-pre
 )](https://github.com/corbel-spatial/ouroboros/actions/workflows/py-prerelease.yml)
 [![GitHub Actions Workflow Status: Linux](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pytest-linux.yml?label=Linux&logo=linux&logoColor=white)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pytest-linux.yml)
 [![GitHub Actions Workflow Status: Windows](https://img.shields.io/github/actions/workflow/status/corbel-spatial/ouroboros/pytest-windows.yml?label=Windows)](https://github.com/corbel-spatial/ouroboros/actions/workflows/pytest-windows.yml)
