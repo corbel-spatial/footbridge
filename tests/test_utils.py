@@ -59,18 +59,18 @@ def test_gdf_to_fc(ft_gdb):
     for fds in gdb.values():
         for fc_name, fc in fds.items():
             gdf = fc.gdf
-            ft.utils.gdf_to_fc(gdf, gdb_path, fc_name + "_copy")
-            ft.utils.gdf_to_fc(gdf, gdb_path, fc_name, overwrite=True)
+            ft._core.gdf_to_fc(gdf, gdb_path, fc_name + "_copy")
+            ft._core.gdf_to_fc(gdf, gdb_path, fc_name, overwrite=True)
             count += 2
     assert count == len(ft.utils.list_layers(gdb_path))
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
+        ft._core.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
 
     # noinspection PyUnresolvedReferences
     with pytest.raises(pyogrio.errors.GeometryError):
         for fc_name, fc in gdb.fc_dict.items():
-            ft.utils.gdf_to_fc(
+            ft._core.gdf_to_fc(
                 gdf=fc.gdf,
                 gdb_path=gdb_path,
                 fc_name=fc_name,
@@ -81,13 +81,13 @@ def test_gdf_to_fc(ft_gdb):
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft.utils.gdf_to_fc(list(), gdb_path, "test")
+        ft._core.gdf_to_fc(list(), gdb_path, "test")
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft.utils.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")
+        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")
 
-    ft.utils.gdf_to_fc(
+    ft._core.gdf_to_fc(
         gpd.GeoSeries([shapely.LineString([(0, 1), (1, 1)])]),
         gdb_path,
         "geoseries",

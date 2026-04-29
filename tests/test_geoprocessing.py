@@ -1,7 +1,4 @@
-import geopandas as gpd
-import pandas as pd
 import pytest
-import shapely
 
 import footbridge as ft
 

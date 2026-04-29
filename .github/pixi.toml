@@ -1,0 +1,39 @@
+[workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "win-64"]
+
+[dependencies]
+pytest = ">=9.0.3,<10"
+pytest-xdist = ">=3.8.0,<4"
+# these should match pyproject.toml
+python = ">=3.11"
+gdal = ">=3.8"
+geojson = ">=3.2"
+geopandas = ">=1.1"
+matplotlib = ">=3.9"
+pyarrow = ">=20"
+xmltodict = ">=1"
+
+[tasks]
+test = "pytest ../tests"
+
+[pypi-dependencies]
+footbridge = { path = "..", editable = false }
+
+[environments]
+py311 = { features = ["py311"] }
+py312 = { features = ["py312"] }
+py313 = { features = ["py313"] }
+py314 = { features = ["py314"] }
+
+[feature.py311.dependencies]
+python = "3.11.*"
+
+[feature.py312.dependencies]
+python = "3.12.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
+
+[feature.py314.dependencies]
+python = "3.14.*"

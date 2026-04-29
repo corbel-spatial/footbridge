@@ -1,9 +1,9 @@
 [project]
-version = "1.0.9"
+version = "1.0.10"
 name = "footbridge"
 authors = [{name = "Peter Von der Porten", email = "dev@corbelspatial.com"}]
 dynamic = []
-description = "Towards more pythonic use of GeoDatabases"
+description = "Pythonic geodatabases for spatial data analysis "
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -23,11 +23,11 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "geojson",
-    "geopandas>=1.1.0",
-    "matplotlib>=3.10.0",
-    "pyarrow",
-    "xmltodict>=1.0.0"
+    "geojson>=3.2",
+    "geopandas>=1.1",
+    "matplotlib>=3.9",
+    "pyarrow>=20",
+    "xmltodict>=1"
 ]
 
 [project.optional-dependencies]
