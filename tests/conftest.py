@@ -1,13 +1,14 @@
 import os
 import uuid
 import zipfile
+from importlib.util import find_spec
 from random import uniform
 
 import geopandas as gpd
 import pytest
 import shapely
 
-import ouroboros as ob
+import footbridge as ft
 
 
 SAMPLES = 1000
@@ -39,14 +40,14 @@ def gdf_points():
 
 @pytest.fixture
 def fc_points(gdb_path, gdf_points):
-    ob.gdf_to_fc(gdf_points, gdb_path, "test_points")
+    ft.utils.gdf_to_fc(gdf_points, gdb_path, "test_points")
     return os.path.join(gdb_path, "test_points")
 
 
 @pytest.fixture
 def fds_fc_points(tmp_path, gdf_points):
     gdb_path = tmp_path / "fc_points.gdb"
-    ob.gdf_to_fc(
+    ft.utils.gdf_to_fc(
         gdf=gdf_points,
         gdb_path=gdb_path,
         fc_name="test_points",
@@ -69,19 +70,19 @@ def gdf_lines(gdf_polygons):
 
 
 @pytest.fixture
-def ob_gdb(gdb_path, gdf_points, gdf_lines, gdf_polygons):
-    gdb = ob.GeoDatabase()
-    gdb["test_points1"] = ob.FeatureClass(gdf_points)
+def ft_gdb(gdb_path, gdf_points, gdf_lines, gdf_polygons):
+    gdb = ft.GeoDatabase()
+    gdb["test_points1"] = ft.FeatureClass(gdf_points)
     assert gdb["test_points1"].geom_type == "Point"
-    gdb["test_lines1"] = ob.FeatureClass(gdf_lines)
+    gdb["test_lines1"] = ft.FeatureClass(gdf_lines)
     assert gdb["test_lines1"].geom_type == "LineString"
-    gdb["test_polygons1"] = ob.FeatureClass(gdf_polygons)
+    gdb["test_polygons1"] = ft.FeatureClass(gdf_polygons)
     assert gdb["test_polygons1"].geom_type == "Polygon"
 
-    fds = ob.FeatureDataset(crs=gdf_points.crs)
-    fds["test_points2"] = ob.FeatureClass(gdf_points)
-    fds["test_lines2"] = ob.FeatureClass(gdf_lines)
-    fds["test_polygons2"] = ob.FeatureClass(gdf_polygons)
+    fds = ft.FeatureDataset(crs=gdf_points.crs)
+    fds["test_points2"] = ft.FeatureClass(gdf_points)
+    fds["test_lines2"] = ft.FeatureClass(gdf_lines)
+    fds["test_polygons2"] = ft.FeatureClass(gdf_polygons)
 
     gdb["test_fds"] = fds
     gdb.save(gdb_path)
@@ -99,3 +100,14 @@ def esri_gdb(tmp_path):
     zf = zipfile.ZipFile(gdb_path, "r")
     zf.extractall(tmp_path)
     return os.path.join(tmp_path, "test_data.gdb")
+
+
+@pytest.fixture
+def gdal_version():
+    if find_spec("osgeo") is not None:
+        from osgeo import gdal
+
+        gdal_version = gdal.__version__
+    else:
+        gdal_version = None
+    return gdal_version

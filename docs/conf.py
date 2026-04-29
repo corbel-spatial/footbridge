@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "src")))
 
 # -- Project information -----------------------------------------------------
 
-project = "ouroboros"
+project = "footbridge"
 copyright = "2025"
 author = "Peter Von der Porten"
 
@@ -46,7 +46,7 @@ intersphinx_disabled_domains = ["std"]
 
 templates_path = ["_templates"]
 
-html_title = "ouroboros"
+html_title = "footbridge"
 
 html_theme_options = {
     # "style_external_links": True,
@@ -54,8 +54,8 @@ html_theme_options = {
     "navigation_depth": 2,
     "show_toc_level": 2,
     "external_links": [
-        {"name": "GitHub", "url": "https://github.com/corbel-spatial/ouroboros"},
-        # {"name": "PyPI", "url": "https://pypi.org/project/ouroboros-gis/"},
+        {"name": "GitHub", "url": "https://github.com/corbel-spatial/footbridge"},
+        # {"name": "PyPI", "url": "https://pypi.org/project/footbridge/"},
     ],
 }
 

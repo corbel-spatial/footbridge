@@ -1,17 +1,17 @@
 Classes
 =======
 
-.. autoclass:: ouroboros.ouroboros.FeatureClass
+.. autoclass:: footbridge.footbridge.FeatureClass
     :members:
     :private-members:
     :special-members: __init__
 
-.. autoclass:: ouroboros.ouroboros.FeatureDataset
+.. autoclass:: footbridge.footbridge.FeatureDataset
     :members:
     :private-members:
     :special-members: __init__
 
-.. autoclass:: ouroboros.ouroboros.GeoDatabase
+.. autoclass:: footbridge.footbridge.GeoDatabase
     :members:
     :private-members:
     :special-members: __init__

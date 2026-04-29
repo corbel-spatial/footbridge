@@ -18,7 +18,7 @@ import xmltodict
 from matplotlib import pyplot as plt
 
 
-__version__ = metadata.version("ouroboros-gis")
+__version__ = metadata.version("footbridge")
 
 from pyogrio.errors import DataSourceError
 
@@ -773,7 +773,7 @@ class FeatureDataset(MutableMapping):
 
         """
         if not isinstance(value, FeatureClass):
-            raise TypeError(f"Expected type ouroboros.FeatureClass: {value}")
+            raise TypeError(f"Expected type footbridge.FeatureClass: {value}")
 
         if key[0].isdigit():
             raise ValueError(f"FeatureClass name cannot start with a digit: {key} ")
@@ -1576,7 +1576,7 @@ def raster_to_tif(
     """
     if not _gdal_installed:
         raise ImportError(
-            "GDAL not installed, ouroboros cannot support raster operations"
+            "GDAL not installed, footbridge cannot support raster operations"
         )
 
     gdb_path = os.path.abspath(gdb_path)

@@ -38,7 +38,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/project/ouroboros-gis
+      url: https://pypi.org/project/footbridge
 
     steps:
       - name: Retrieve release distributions

@@ -1,6 +1,6 @@
 # Contributing
 
-Questions and suggestions are welcomed in the [Issues section](https://github.com/corbel-spatial/ouroboros/issues). The information below will help you set up a 
+Questions and suggestions are welcomed in the [Issues section](https://github.com/corbel-spatial/footbridge/issues). The information below will help you set up a
 development environment if you wish to submit pull requests.
 
 ## Development Environment Setup
@@ -8,8 +8,8 @@ development environment if you wish to submit pull requests.
 First, install the [Pixi](https://pixi.sh/latest/installation/) package management tool. Then,
 
 ```shell
-git clone https://github.com/corbel-spatial/ouroboros.git
-cd ouroboros
+git clone https://github.com/corbel-spatial/footbridge.git
+cd footbridge
 pixi install
 pixi install -e dev
 ```

@@ -4,7 +4,14 @@
 
 - First stable release
 
-## v1.0.8 (latest)
+## v1.0.9 (latest)
+
+- Rename/refactor to `footbridge`
+- Documentation and tests updates
+- Squashed the messy commit history down to the just release commits (full history preserved in `main-backup-20260429` branch)
+- Put GitHub Actions on pause
+
+## v1.0.8
 
 - Add export methods back to `FeatureClass`
 - Add CONTRIBUTING.md

@@ -1,5 +1,5 @@
 @echo off
-SET env=ouroboros-dev
+SET env=footbridge-dev
 SET m=********************
 SET conda="C:\Users\%USERNAME%\miniconda3\Scripts\conda.exe"
 

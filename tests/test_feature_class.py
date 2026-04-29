@@ -5,48 +5,48 @@ import pyproj
 import pytest
 import shapely
 
-import ouroboros as ob
+import footbridge as ft
 
 
 def test_instantiate_fc(fc_points, fds_fc_points):
     with pytest.raises(TypeError):
-        fc = ob.FeatureClass(0)  # noqa: F841
+        fc = ft.FeatureClass(0)  # noqa: F841
 
-    fc1 = ob.FeatureClass(fc_points)
+    fc1 = ft.FeatureClass(fc_points)
     assert isinstance(fc1.gdf, gpd.GeoDataFrame)
 
-    fc2 = ob.FeatureClass(fds_fc_points)
+    fc2 = ft.FeatureClass(fds_fc_points)
     assert isinstance(fc2.gdf, gpd.GeoDataFrame)
 
-    fc3 = ob.FeatureClass(gpd.GeoSeries([shapely.Point(0, 1)]))
+    fc3 = ft.FeatureClass(gpd.GeoSeries([shapely.Point(0, 1)]))
     assert isinstance(fc3.gdf, gpd.GeoDataFrame)
 
-    fc4 = ob.FeatureClass(fc3)
+    fc4 = ft.FeatureClass(fc3)
     assert isinstance(fc4.gdf, gpd.GeoDataFrame)
 
     with pytest.raises(TypeError):
-        fc5 = ob.FeatureClass("test.gdb")
+        fc5 = ft.FeatureClass("test.gdb")
 
     with pytest.raises(FileNotFoundError):
-        fc5 = ob.FeatureClass("doesnotexist.gdb/test_fc")  # noqa: F841
+        fc5 = ft.FeatureClass("doesnotexist.gdb/test_fc")  # noqa: F841
 
 
 def test_instatiate_gdf():
-    fc1 = ob.FeatureClass(gpd.GeoDataFrame(geometry=[shapely.Point(0, 1)]))
+    fc1 = ft.FeatureClass(gpd.GeoDataFrame(geometry=[shapely.Point(0, 1)]))
     assert isinstance(fc1.gdf, gpd.GeoDataFrame)
 
-    fc2 = ob.FeatureClass(gpd.GeoDataFrame(geometry=[]))
+    fc2 = ft.FeatureClass(gpd.GeoDataFrame(geometry=[]))
     assert isinstance(fc2.gdf, gpd.GeoDataFrame)
 
 
 def test_instatiate_none():
-    fc1 = ob.FeatureClass()
+    fc1 = ft.FeatureClass()
     assert isinstance(fc1.gdf, gpd.GeoDataFrame)
     assert len(fc1.gdf) == 0
 
 
 def test_delitem(gdf_points, samples):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     del fc1[500]
     assert len(fc1) == samples - 1
     with pytest.raises(TypeError):
@@ -55,7 +55,7 @@ def test_delitem(gdf_points, samples):
 
 
 def test_getitem(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     assert isinstance(fc1[0], gpd.GeoDataFrame)
     assert isinstance(fc1[-1], gpd.GeoDataFrame)
     assert isinstance(fc1[100:105], gpd.GeoDataFrame)
@@ -69,7 +69,7 @@ def test_getitem(gdf_points):
 
 
 def test_iter(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     for row in fc1:
         assert isinstance(row, tuple)
         assert isinstance(row[0], int)
@@ -80,12 +80,12 @@ def test_iter(gdf_points):
 
 
 def test_len(gdf_points, samples):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     assert len(fc1) == samples
 
 
 def test_setitem(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc1[(0, "geometry")] = None
     fc1[(-1, 0)] = None
     with pytest.raises(TypeError):
@@ -96,24 +96,24 @@ def test_setitem(gdf_points):
         fc1[(0, dict())] = None
 
 
-def test_crs(ob_gdb):
-    gdb, gdb_path = ob_gdb
+def test_crs(ft_gdb):
+    gdb, gdb_path = ft_gdb
 
     for fc in gdb.fcs:
         assert isinstance(fc.crs, pyproj.crs.CRS)
 
-    fc1 = ob.FeatureClass()
+    fc1 = ft.FeatureClass()
     assert fc1.crs is None
 
 
-def test_gdf(ob_gdb):
-    gdb, gdb_path = ob_gdb
+def test_gdf(ft_gdb):
+    gdb, gdb_path = ft_gdb
     for fc in gdb.fcs:
         assert isinstance(fc.gdf, gpd.GeoDataFrame)
 
 
-def test_geom_type(ob_gdb):
-    gdb, gdb_path = ob_gdb
+def test_geom_type(ft_gdb):
+    gdb, gdb_path = ft_gdb
     for fc in gdb.fcs:
         assert fc.geom_type in (
             "Point",
@@ -125,31 +125,31 @@ def test_geom_type(ob_gdb):
             None,
         )
 
-    fc1 = ob.FeatureClass()
+    fc1 = ft.FeatureClass()
     assert fc1.geom_type is None
 
 
 def test_geometry(gdf_polygons):
-    fc1 = ob.FeatureClass(gdf_polygons)
+    fc1 = ft.FeatureClass(gdf_polygons)
     assert isinstance(fc1.geometry.bounds, pd.DataFrame)
     with pytest.raises(AttributeError):
         fc1.geometry = False  # noqa
 
-    fc2 = ob.FeatureClass()
+    fc2 = ft.FeatureClass()
     assert fc2.geometry is None
 
 
 def test_append(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     count = len(fc1)
     new_row = fc1[0]
     fc1.append(new_row)
     assert len(fc1) == count + 1
     assert fc1[0].iat[0, 0] == fc1[-1].iat[0, 0]
 
-    fc2 = ob.FeatureClass(fc1)
+    fc2 = ft.FeatureClass(fc1)
     count = len(fc2)
-    new_row = ob.FeatureClass(fc2[0])
+    new_row = ft.FeatureClass(fc2[0])
     fc2.append(new_row)
     assert len(fc2) == count + 1
     assert fc2[0].iat[0, 0] == fc2[-1].iat[0, 0]
@@ -159,25 +159,25 @@ def test_append(gdf_points):
 
 
 def test_calculate(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc1.calculate(
         "sample1",
         "test",
     )
     # fc1.select_columns("sample1", geometry=False).head()
 
-    fc2 = ob.FeatureClass(gdf_points)
+    fc2 = ft.FeatureClass(gdf_points)
     fc2.calculate(
         "test2",
         "test",
     )
     # fc2.select_columns("test2", geometry=False).head()
 
-    fc3 = ob.FeatureClass(gdf_points)
+    fc3 = ft.FeatureClass(gdf_points)
     fc3.calculate("test3", 2 * 2, np.uint8)
     # fc3.select_columns("test3", geometry=False).head()
 
-    fc4 = ob.FeatureClass(gdf_points)
+    fc4 = ft.FeatureClass(gdf_points)
     fc4.calculate(
         "test4",
         "$sample2$ + '___' + $sample2$ + '___' + $sample3$",
@@ -190,20 +190,20 @@ def test_calculate(gdf_points):
 
 
 def test_clear(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc1.clear()
     assert len(fc1) == 0
 
 
 def test_copy(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc2 = fc1.copy()
     assert len(fc1) == len(fc2)
     assert fc1 != fc2
 
 
 def test_head(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc1.head(0, silent=False)
     h = fc1.head(5, silent=True)
     assert isinstance(h, pd.DataFrame)
@@ -211,7 +211,7 @@ def test_head(gdf_points):
 
 
 def test_insert(gdf_points, samples):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     new_row = fc1[500]
     fc1.insert(600, new_row)
     assert len(fc1) == samples + 1
@@ -231,7 +231,7 @@ def test_insert(gdf_points, samples):
         fc1.insert(500, gpd.GeoDataFrame(columns=["test"]))
 
     with pytest.raises(TypeError):
-        fc2 = ob.FeatureClass(gpd.GeoDataFrame(geometry=[shapely.Point(0, 1)]))
+        fc2 = ft.FeatureClass(gpd.GeoDataFrame(geometry=[shapely.Point(0, 1)]))
         fc2.insert(
             -1,
             gpd.GeoDataFrame(
@@ -243,10 +243,10 @@ def test_insert(gdf_points, samples):
         )
 
     # validate geometry
-    fc3 = ob.FeatureClass()
+    fc3 = ft.FeatureClass()
     assert fc3.geom_type is None
 
-    fc3 = ob.FeatureClass(gpd.GeoDataFrame({"col1": ["a"]}, geometry=[None]))
+    fc3 = ft.FeatureClass(gpd.GeoDataFrame({"col1": ["a"]}, geometry=[None]))
     assert fc3.geom_type is None
 
     fc3.insert(
@@ -265,7 +265,7 @@ def test_insert(gdf_points, samples):
 
     fc3.insert(
         -1,
-        ob.FeatureClass(
+        ft.FeatureClass(
             gpd.GeoDataFrame(
                 {"col1": ["c"]},
                 geometry=[shapely.LineString([(0, 1), (1, 1)])],
@@ -313,7 +313,7 @@ def test_insert(gdf_points, samples):
 
 
 def test_list_fields(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     assert fc1.list_fields() == [
         "ObjectID",
         "sample1",
@@ -324,7 +324,7 @@ def test_list_fields(gdf_points):
 
 
 def test_save(gdf_points, gdb_path):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
 
     fc1.save(
         gdb_path=gdb_path,
@@ -351,12 +351,12 @@ def test_save(gdf_points, gdb_path):
 
 
 def test_show(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fc1.show(block=False)
 
 
 def test_select_columns(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     cols1 = fc1.select_columns(["sample1", "sample2"])
     assert len(cols1) == 1000
 
@@ -377,7 +377,7 @@ def test_select_columns(gdf_points):
 
 
 def test_select_rows(gdf_points, samples):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     rows1 = fc1.select_rows("ObjectID < 10")
 
     assert len(rows1) == 10
@@ -396,7 +396,7 @@ def test_select_rows(gdf_points, samples):
 
 
 def test_sort(gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     case1 = fc1[0].iat[0, 0]
     fc1.sort("sample1", ascending=True)
     case2 = fc1[0].iat[0, 0]
@@ -406,30 +406,30 @@ def test_sort(gdf_points):
 
 
 def test_to_json(tmp_path, gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts.geojson")
     fc1.to_json(fp, indent=2)
 
-    fc2 = ob.FeatureClass(gdf_points)
+    fc2 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts")
     fc2.to_json(fp, indent=2)
 
 
 def test_to_shp(tmp_path, gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts.shp")
     fc1.to_shp(fp)
 
-    fc2 = ob.FeatureClass(gdf_points)
+    fc2 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts")
     fc2.to_shp(fp)
 
 
 def test_to_parquet(tmp_path, gdf_points):
-    fc1 = ob.FeatureClass(gdf_points)
+    fc1 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts.parquet")
     fc1.to_parquet(fp)
 
-    fc2 = ob.FeatureClass(gdf_points)
+    fc2 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts")
     fc2.to_parquet(fp)

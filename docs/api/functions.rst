@@ -1,6 +1,6 @@
 Utility Functions
 =================
 
-.. automodule:: ouroboros.ouroboros
+.. automodule:: footbridge.footbridge
     :members:
     :exclude-members: FeatureClass,FeatureDataset,GeoDatabase,buffer,clip,overlay

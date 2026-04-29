@@ -1,6 +1,6 @@
 [project]
-version = "1.0.8"
-name = "ouroboros-gis"
+version = "1.0.9"
+name = "footbridge"
 authors = [{name = "Peter Von der Porten", email = "dev@corbelspatial.com"}]
 dynamic = []
 description = "Towards more pythonic use of GeoDatabases"
@@ -10,19 +10,18 @@ license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows :: Windows 10",
     "Operating System :: Microsoft :: Windows :: Windows 11",
     "Operating System :: OS Independent",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Intended Audience :: Information Technology",
     "Topic :: Scientific/Engineering :: GIS"
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "geojson",
     "geopandas>=1.1.0",
@@ -35,11 +34,11 @@ dependencies = [
 raster = ["gdal>=3.8"]
 
 [project.urls]
-homepage = "https://pypi.org/project/ouroboros-gis/"
-documentation = "https://ouroboros-gis.readthedocs.io/en/latest/"
-repository = "https://github.com/corbel-spatial/ouroboros"
-issues = "https://github.com/corbel-spatial/ouroboros/issues"
-changelog = "https://github.com/corbel-spatial/ouroboros/blob/main/CHANGELOG.md"
+homepage = "https://pypi.org/project/footbridge/"
+documentation = "https://footbridge.readthedocs.io/en/latest/"
+repository = "https://github.com/corbel-spatial/footbridge"
+issues = "https://github.com/corbel-spatial/footbridge/issues"
+changelog = "https://github.com/corbel-spatial/footbridge/blob/main/CHANGELOG.md"
 
 [build-system]
 build-backend = "hatchling.build"
@@ -51,7 +50,8 @@ exclude = [
     "/.idea",
     "/.run",
     "/docs",
+    "/.readthedocs.yaml"
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ouroboros"]
+packages = ["src/footbridge"]

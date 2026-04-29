@@ -4,10 +4,10 @@ References
 Project Pages
 -------------
 
-* `Conda Forge <https://anaconda.org/conda-forge/ouroboros-gis>`__
-* `Python Package Index <https://pypi.org/project/ouroboros-gis/>`__
-* `GitHub Repository <https://github.com/corbel-spatial/ouroboros>`__
-* `Conda Forge Feedstock <https://github.com/corbel-spatial/ouroboros-gis-feedstock>`__
+* `Conda Forge <https://anaconda.org/conda-forge/footbridge>`__
+* `Python Package Index <https://pypi.org/project/footbridge/>`__
+* `GitHub Repository <https://github.com/corbel-spatial/footbridge>`__
+* `Conda Forge Feedstock <https://github.com/corbel-spatial/footbridge-feedstock>`__
 
 Core Dependencies
 -----------------
