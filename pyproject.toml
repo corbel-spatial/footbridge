@@ -1,5 +1,5 @@
 [project]
-version = "1.0.9"
+version = "1.0.10"
 name = "footbridge"
 authors = [{name = "Peter Von der Porten", email = "dev@corbelspatial.com"}]
 dynamic = []
