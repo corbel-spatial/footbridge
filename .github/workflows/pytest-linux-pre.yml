@@ -1,0 +1,44 @@
+name: Test Python Prerelease
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: [ "src/**", "tests/**" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test-on-prerelease-python:
+    runs-on: ubuntu-latest
+
+    container: ghcr.io/corbel-spatial/here-be-dragons:next
+
+    steps:
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            pyproject.toml
+            README.md
+            src
+            tests
+          sparse-checkout-cone-mode: false
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          apt update
+          apt install --no-install-recommends -y libjpeg-dev
+          uv pip install --system \
+            pytest
+          uv pip install --system \
+            https://github.com/geopandas/geopandas.git \
+            https://github.com/geopandas/pyogrio.git \
+            https://github.com/pandas-dev/pandas.git
+
+      - name: Run tests
+        shell: bash
+        run: |
+          uv pip install --system . 
+          pytest ./tests -vv -s

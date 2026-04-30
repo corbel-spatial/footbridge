@@ -1,18 +1,17 @@
-# https://github.com/marketplace/actions/setup-pixi
-name: Lint
-permissions:
-  contents: read
-  pull-requests: write
+name: Lint Check
+
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths: [ "src/**" ]
+  pull_request:
+    paths: [ "src/**", "tests/**" ]
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             pixi.lock
@@ -22,9 +21,15 @@ jobs:
             src
             tests
           sparse-checkout-cone-mode: false
-      - uses: prefix-dev/setup-pixi@v0.9.1
+
+      # https://github.com/marketplace/actions/setup-pixi
+      - uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          pixi-version: v0.56.0
+          pixi-version: v0.67.2
           cache: true
-      - name: Run Black and Ruff
+          environments: dev
+          activate-environment: true
+          locked: false
+          frozen: true
+      - name: lint
         run: pixi run lint

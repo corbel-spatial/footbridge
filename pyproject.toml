@@ -3,7 +3,7 @@ version = "1.0.10"
 name = "footbridge"
 authors = [{name = "Peter Von der Porten", email = "dev@corbelspatial.com"}]
 dynamic = []
-description = "Towards more pythonic use of GeoDatabases"
+description = "Pythonic geodatabases for spatial data analysis "
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
