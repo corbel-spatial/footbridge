@@ -1,17 +1,17 @@
-<!-- [![Conda - Version](https://img.shields.io/conda/vn/conda-forge/footbridge.svg)](https://anaconda.org/conda-forge/footbridge) -->
 [![PyPI - Version](https://img.shields.io/pypi/v/footbridge)](https://pypi.org/project/footbridge/)
+[![PyPI Downloads](https://static.pepy.tech/badge/footbridge/month)](https://pepy.tech/projects/footbridge)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/footbridge)](https://pypi.org/project/footbridge/)
-<!-- [![PyPI Downloads](https://static.pepy.tech/badge/footbridge/month)](https://pepy.tech/projects/footbridge) -->
+[![Conda - Version](https://img.shields.io/conda/vn/conda-forge/footbridge.svg)](https://anaconda.org/conda-forge/footbridge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=)](https://github.com/corbel-spatial/footbridge/blob/main/LICENSE)
 [![Pixi](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fprefix-dev%2Fpixi%2Fmain%2Fassets%2Fbadge%2Fv0.json&label=%E2%9C%A8)](https://pixi.sh)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
-<!-- [![Actions Workflow Status: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/test-prerelease.yml?label=3.15-pre)](https://github.com/corbel-spatial/footbridge/actions/workflows/test-prerelease.yml) -->
-<!-- [![GitHub Actions Workflow Status: Linux](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux.yml?label=Linux&logo=linux&logoColor=white)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux.yml) -->
-<!-- [![GitHub Actions Workflow Status: Windows](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-windows.yml?label=Windows)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-windows.yml) -->
-<!-- [![GitHub Actions Workflow Status: macOS](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-macos.yml?label=macOS)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-macos.yml) -->
-<!-- [![GitHub Actions Workflow Status: Black](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/lint.yml?label=Black%20%26%20Ruff)](https://github.com/corbel-spatial/footbridge/actions/workflows/lint.yml) -->
-<!-- [![Test Coverage: SlipCover](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcorbel-spatial%2Ffootbridge%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpytest_coverage.json&query=%24.summary.percent_covered_display&label=Coverage%20%25&color=brightgreen)](https://github.com/corbel-spatial/footbridge/actions/workflows/coverage.yml) -->
-<!-- [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv) -->
+[![GitHub Actions Workflow Status: Linux](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux.yml?label=Linux&logo=linux&logoColor=white)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux.yml)
+[![GitHub Actions Workflow Status: Windows](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-windows.yml?label=Windows)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-windows.yml)
+[![GitHub Actions Workflow Status: macOS](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-macos.yml?label=macOS)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-macos.yml)
+[![GitHub Actions Workflow Status: Black](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/lint.yml?label=Black%20%26%20Ruff)](https://github.com/corbel-spatial/footbridge/actions/workflows/lint.yml)
+[![Test Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcorbel-spatial%2Ffootbridge%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpytest_coverage.json&query=%24.totals.percent_covered_display&label=coverage%20%25&color=brightgreen)](https://github.com/corbel-spatial/footbridge/actions/workflows/coverage.yml)
+[![GitHub Actions Workflow Status: Test Python Prerelease: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux-pre.yml?label=3.15-pre)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux-pre.yml)
 
 # footbridge
 

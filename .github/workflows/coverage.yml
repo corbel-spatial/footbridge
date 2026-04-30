@@ -1,18 +1,19 @@
-# https://github.com/marketplace/actions/setup-pixi
-name: Analyze Test Coverage
-permissions:
-  contents: write
-  pull-requests: write
+name: Update Test Coverage
+
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
-    paths: [ "src/**" ]
+    branches: [ "dev" ]
+    paths: [ "src/**", "tests/**" ]
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             docs/pytest_coverage.json
@@ -23,16 +24,24 @@ jobs:
             src
             tests
           sparse-checkout-cone-mode: false
-      - uses: prefix-dev/setup-pixi@v0.9.1
+
+      # https://github.com/marketplace/actions/setup-pixi
+      - uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          pixi-version: v0.56.0
+          pixi-version: v0.67.2
           cache: true
-      - name: Run SlipCover
+          environments: dev
+          activate-environment: true
+          locked: false
+          frozen: true
+
+      - name: Run coverage
         run: pixi run coverage
+
       - name: Push changes
-        run: | 
-          git config --local user.email "peter@corbelspatial.com"
-          git config --local user.name "p-vdp"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ./docs/pytest_coverage.json
-          git commit -m "GitHub Action: Analyze Test Coverage"
+          git commit -m "Update Test Coverage"
           git push

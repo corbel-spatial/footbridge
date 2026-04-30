@@ -1,17 +1,19 @@
 name: Test Python Prerelease
-permissions:
-  contents: read
-  pull-requests: write
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths: [ "src/**" ]
+
+permissions:
+  contents: read
+
 jobs:
-  test-on-prerelease:
+  test-on-prerelease-python:
     runs-on: ubuntu-latest
+
+    container: ghcr.io/corbel-spatial/here-be-dragons:next
+
     steps:
-      - uses: actions/checkout@v4
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             pyproject.toml
@@ -19,7 +21,9 @@ jobs:
             src
             tests
           sparse-checkout-cone-mode: false
-      - run: |
+
+      - name: Run tests
+        run: |
           docker run --name tester --rm -id --mount type=bind,source=./,target=/root/checkout ghcr.io/corbel-spatial/here-be-dragons:next
           docker exec -w /root/checkout tester uv pip install --system . pytest
           docker exec -w /root/checkout tester pytest
