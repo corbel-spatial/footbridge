@@ -5,6 +5,9 @@ on:
   pull_request:
     paths: [ "src/**", "tests/**" ]
 
+permissions:
+  contents: read
+
 jobs:
   pytest:
     runs-on: macos-latest

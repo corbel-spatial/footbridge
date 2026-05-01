@@ -5,12 +5,17 @@ on:
   pull_request:
     paths: [ "src/**", "tests/**" ]
 
+permissions:
+  contents: read
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
 
-    steps:
+    permissions:
+      contents: read
 
+    steps:
       # https://github.com/actions/checkout
       - uses: actions/checkout@v6
         with:

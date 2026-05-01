@@ -2,7 +2,7 @@ from typing import Literal
 
 import geopandas as gpd
 
-from footbridge import FeatureClass
+from ._core import FeatureClass
 
 
 def buffer(fc: FeatureClass, distance: float, **kwargs: dict) -> FeatureClass:

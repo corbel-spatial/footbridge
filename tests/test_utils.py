@@ -12,45 +12,45 @@ import footbridge as ft
 def test_fc_to_json(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
     for fc_name, fc in gdb.fc_dict.items():
-        gjs = ft.utils.fc_to_json(gdb_path, fc_name)
+        gjs = ft.fc_to_json(gdb_path, fc_name)
         assert isinstance(gjs, geojson.FeatureCollection)
 
     for fc_name, fc in gdb.fc_dict.items():
         fp = str(tmp_path / fc_name) + ".geojson"
-        ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
+        ft.fc_to_json(gdb_path, fc_name, fp, indent=2)
 
         fp = str(tmp_path / fc_name)
-        ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
+        ft.fc_to_json(gdb_path, fc_name, fp, indent=2)
 
 
 def test_fc_to_parquet(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
     for fc_name, fc in gdb.fc_dict.items():
         fp = str(tmp_path / fc_name) + ".parquet"
-        ft.utils.fc_to_parquet(gdb_path, fc_name, fp)
+        ft.fc_to_parquet(gdb_path, fc_name, fp)
 
         fp = str(tmp_path / fc_name)
-        ft.utils.fc_to_parquet(gdb_path, fc_name, fp)
+        ft.fc_to_parquet(gdb_path, fc_name, fp)
 
 
 def test_fc_to_shp(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
     for fc_name, fc in gdb.fc_dict.items():
         fp = str(tmp_path / fc_name) + ".shp"
-        ft.utils.fc_to_shp(gdb_path, fc_name, fp)
+        ft.fc_to_shp(gdb_path, fc_name, fp)
 
         fp = str(tmp_path / fc_name)
-        ft.utils.fc_to_shp(gdb_path, fc_name, fp)
+        ft.fc_to_shp(gdb_path, fc_name, fp)
 
 
 def test_fc_to_gdf(ft_gdb):
     gdb, gdb_path = ft_gdb
-    for fc in ft.utils.list_layers(gdb_path):
-        gdf = ft.utils.fc_to_gdf(gdb_path, fc)
+    for fc in ft.list_layers(gdb_path):
+        gdf = ft.fc_to_gdf(gdb_path, fc)
         assert isinstance(gdf, gpd.GeoDataFrame)
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft.utils.fc_to_gdf(gdb_path, 0)
+        ft.fc_to_gdf(gdb_path, 0)
 
 
 def test_gdf_to_fc(ft_gdb):
@@ -59,18 +59,18 @@ def test_gdf_to_fc(ft_gdb):
     for fds in gdb.values():
         for fc_name, fc in fds.items():
             gdf = fc.gdf
-            ft.utils.gdf_to_fc(gdf, gdb_path, fc_name + "_copy")
-            ft.utils.gdf_to_fc(gdf, gdb_path, fc_name, overwrite=True)
+            ft._core.gdf_to_fc(gdf, gdb_path, fc_name + "_copy")
+            ft._core.gdf_to_fc(gdf, gdb_path, fc_name, overwrite=True)
             count += 2
-    assert count == len(ft.utils.list_layers(gdb_path))
+    assert count == len(ft.list_layers(gdb_path))
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
+        ft._core.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
 
     # noinspection PyUnresolvedReferences
     with pytest.raises(pyogrio.errors.GeometryError):
         for fc_name, fc in gdb.fc_dict.items():
-            ft.utils.gdf_to_fc(
+            ft._core.gdf_to_fc(
                 gdf=fc.gdf,
                 gdb_path=gdb_path,
                 fc_name=fc_name,
@@ -81,13 +81,13 @@ def test_gdf_to_fc(ft_gdb):
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft.utils.gdf_to_fc(list(), gdb_path, "test")
+        ft._core.gdf_to_fc(list(), gdb_path, "test")
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft.utils.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")
+        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")
 
-    ft.utils.gdf_to_fc(
+    ft._core.gdf_to_fc(
         gpd.GeoSeries([shapely.LineString([(0, 1), (1, 1)])]),
         gdb_path,
         "geoseries",
@@ -113,83 +113,83 @@ def test_get_info(tmp_path, esri_gdb):
     )
     gdb_path = tmp_path / "out.gdb"
     gdb.save(gdb_path, overwrite=True)
-    info = ft.utils.get_info(gdb_path)
+    info = ft.get_info(gdb_path)
     assert isinstance(info, dict)
 
-    info = ft.utils.get_info(esri_gdb)
+    info = ft.get_info(esri_gdb)
     assert isinstance(info, dict)
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.get_info("bad_path")
+        ft.get_info("bad_path")
 
     with pytest.raises(TypeError):
         try:  # pytest
-            ft.utils.get_info("pyproject.toml")
+            ft.get_info("pyproject.toml")
         except FileNotFoundError:  # coverage
-            ft.utils.get_info(os.path.join("..", "pyproject.toml"))
+            ft.get_info(os.path.join("..", "pyproject.toml"))
 
 
 def test_list_datasets(ft_gdb, esri_gdb):
     gdb, gdb_path = ft_gdb
-    fds1 = ft.utils.list_datasets(gdb_path)
+    fds1 = ft.list_datasets(gdb_path)
     assert len(fds1) == 2
     for k, v in fds1.items():
         assert isinstance(k, str) or k is None
         assert isinstance(v, list)
 
-    fds3 = ft.utils.list_datasets(esri_gdb)
+    fds3 = ft.list_datasets(esri_gdb)
     assert isinstance(fds3, dict)
     assert len(fds3) == 0
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.list_datasets("bad_path")
+        ft.list_datasets("bad_path")
 
     with pytest.raises(TypeError):
         try:  # pytest
-            ft.utils.list_datasets("pyproject.toml")
+            ft.list_datasets("pyproject.toml")
         except FileNotFoundError:  # coverage
-            ft.utils.list_datasets(os.path.join("..", "pyproject.toml"))
+            ft.list_datasets(os.path.join("..", "pyproject.toml"))
 
 
 def test_list_layers(ft_gdb):
     gdb, gdb_path = ft_gdb
-    lyrs = ft.utils.list_layers(gdb_path)
+    lyrs = ft.list_layers(gdb_path)
     assert len(lyrs) == 6
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.list_layers("bad_path")
+        ft.list_layers("bad_path")
 
     with pytest.raises(TypeError):
         try:  # pytest
-            ft.utils.list_layers("pyproject.toml")
+            ft.list_layers("pyproject.toml")
         except FileNotFoundError:  # coverage
-            ft.utils.list_layers(os.path.join("..", "pyproject.toml"))
+            ft.list_layers(os.path.join("..", "pyproject.toml"))
 
 
 def test_list_rasters(ft_gdb, esri_gdb):
-    rasters = ft.utils.list_rasters(esri_gdb)
+    rasters = ft.list_rasters(esri_gdb)
     assert len(rasters) == 1
     for raster in rasters:
         assert isinstance(raster, str)
 
     gdb, gdb_path = ft_gdb
-    rasters = ft.utils.list_rasters(gdb_path)
+    rasters = ft.list_rasters(gdb_path)
     assert len(rasters) == 0
 
     with pytest.raises(FileNotFoundError):
-        ft.utils.list_rasters("bad_path")
+        ft.list_rasters("bad_path")
 
     with pytest.raises(TypeError):
         try:  # pytest
-            ft.utils.list_rasters("pyproject.toml")
+            ft.list_rasters("pyproject.toml")
         except FileNotFoundError:  # coverage
-            ft.utils.list_rasters(os.path.join("..", "pyproject.toml"))
+            ft.list_rasters(os.path.join("..", "pyproject.toml"))
 
 
 def test_raster_to_tif(tmp_path, capsys, esri_gdb, gdal_version):
     if not gdal_version:
         with pytest.raises(ImportError):
-            ft.utils.raster_to_tif(
+            ft.raster_to_tif(
                 gdb_path=esri_gdb,
                 raster_name="random_raster",
                 tif_path=None,
@@ -197,21 +197,21 @@ def test_raster_to_tif(tmp_path, capsys, esri_gdb, gdal_version):
     else:
         with capsys.disabled():
             print("\n\t*** GDAL installed:", gdal_version, "***")
-        ft.utils.raster_to_tif(
+        ft.raster_to_tif(
             gdb_path=esri_gdb,
             raster_name="random_raster",
             tif_path=None,
         )
 
         tif_path = tmp_path / "test"
-        ft.utils.raster_to_tif(
+        ft.raster_to_tif(
             gdb_path=esri_gdb,
             raster_name="random_raster",
             tif_path=str(tif_path),
         )
 
         tif_path = tmp_path / "test.tif"
-        ft.utils.raster_to_tif(
+        ft.raster_to_tif(
             gdb_path=esri_gdb,
             raster_name="random_raster",
             tif_path=str(tif_path),

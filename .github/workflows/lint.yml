@@ -5,9 +5,15 @@ on:
   pull_request:
     paths: [ "src/**", "tests/**" ]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
 
     steps:
       # https://github.com/actions/checkout
