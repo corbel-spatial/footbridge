@@ -42,7 +42,7 @@ types-shapely = ">=2.1.0.20260402,<3"
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
 lint = "ruff check ./src ./tests"
 lint-fmt = "ruff check --fix ./src ./tests && ruff format ./src ./tests"
-test = "pytest ./tests"
+test = "pytest -n auto ./tests"
 
 [feature.docs]
 # dependencies should match docs/requirements.txt

@@ -27,8 +27,7 @@ class FeatureClass(MutableSequence):
     # noinspection PyTypeHints
     def __init__(
         self,
-        src: "None | os.PathLike | str | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None,
-        # noqa
+        src: "None | os.PathLike | str | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None, # noqa: F821
     ):
         """
         Initializes the geospatial data container by parsing the source and extracting

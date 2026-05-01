@@ -33,5 +33,5 @@ Geoprocessing Functions
 Utility Functions
 -----------------
 
-.. automodule:: footbridge._utils
+.. automodule:: footbridge.utils
     :members:
