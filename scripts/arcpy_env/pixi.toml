@@ -1,0 +1,24 @@
+[workspace]
+channels = ["esri", "main", "r", "msys2", "conda-forge"]
+name = "arcpy_env"
+platforms = ["win-64"]
+channel-priority = "disabled"
+preview = ["pixi-build"]
+
+[tasks]
+
+[dependencies]
+python = ">=3.13.13,<3.14"
+footbridge = ">=1.0.10,<2"
+gdal = "*"
+
+[pypi-dependencies]
+pandas = { git = "https://github.com/pandas-dev/pandas.git" }
+geopandas = { git = "https://github.com/geopandas/geopandas.git" }
+pyogrio = { git = "https://github.com/geopandas/pyogrio.git" }
+
+#arcpy = ">=3.6,<3.7"
+#cftime = ">=1.6.5,<2"
+#azure-core = ">=1.40.0,<2"
+#libpdal-base = ">=2.9.3,<3"
+#brotli-bin = ">=1.2.0,<2"

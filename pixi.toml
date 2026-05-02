@@ -39,6 +39,7 @@ sedonadb = ">=0.3.0,<0.4"
 types-shapely = ">=2.1.0.20260402,<3"
 
 [feature.dev.tasks]
+arc = "python scripts/arcpy_env/export.py"
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
 lint = "ruff check ./src ./tests"
 lint-fmt = "ruff check --fix ./src ./tests && ruff format ./src ./tests"
