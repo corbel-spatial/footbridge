@@ -14854,6 +14854,7 @@ packages:
   - tornado >=6.2.0
   - python
   license: BSD-3-Clause
+  license_family: BSD
   purls:
   - pkg:pypi/notebook?source=compressed-mapping
   size: 10114589
