@@ -2,7 +2,7 @@ import footbridge as ft
 
 
 def test_gdb_fixtures(ft_gdb, esri_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
 
     for this_gdb in [gdb, ft.GeoDatabase(path=esri_gdb)]:
         assert isinstance(this_gdb, ft.GeoDatabase)

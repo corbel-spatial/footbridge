@@ -4,7 +4,7 @@ import footbridge as ft
 
 
 def test_buffer(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
     for fc in gdb.fcs:
         with pytest.warns(UserWarning):
             fc_buffered = ft.buffer(fc, 5.0)
@@ -13,7 +13,7 @@ def test_buffer(ft_gdb):
 
 
 def test_clip(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
     fc1 = gdb["test_polygons1"]
     fc2 = gdb["test_polygons2"]
     fc_clipped = ft.clip(fc1, fc2)
@@ -22,7 +22,7 @@ def test_clip(ft_gdb):
 
 
 def test_overlay(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
     fc1 = gdb["test_polygons1"]
     fc2 = gdb["test_polygons2"]
     fc_overlaid = ft.overlay(fc1, fc2, "union")
@@ -86,14 +86,14 @@ def test_add_fds(gdf_points, gdf_lines, gdf_polygons):
 
 
 def test_iters(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
 
-    for fds_name, fds in gdb.items():
+    for fds in gdb.values():
         for fc_name, fc in fds.items():
             assert isinstance(fc_name, str)
             assert isinstance(fc, ft.FeatureClass)
 
-    for fds_name, fds in gdb.fds_dict.items():
+    for fds in gdb.fds_dict.values():
         for fc_name, fc in fds.items():
             assert isinstance(fc_name, str)
             assert isinstance(fc, ft.FeatureClass)
@@ -114,7 +114,7 @@ def test_iters(ft_gdb):
 # TODO test_sanitize_gdf_geometry
 # def test_sanitize_gdf_geometry(gdf_points, gdf_lines, gdf_polygons):
 #     with pytest.raises(TypeError):
-#         ft.utils.sanitize_gdf_geometry(pd.DataFrame())  # noqa
+#         ft.utils.sanitize_gdf_geometry(pd.DataFrame())
 #
 #     with pytest.raises(TypeError):
 #         ft.utils.sanitize_gdf_geometry(

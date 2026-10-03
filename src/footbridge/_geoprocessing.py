@@ -55,7 +55,7 @@ def overlay(
     how: Literal[
         "intersection", "union", "identity", "symmetric_difference", "difference"
     ] = "intersection",
-    **kwargs: dict,
+    **kwargs: dict|None,
 ) -> FeatureClass:
     """
     Perform a spatial overlay between two FeatureClasses
@@ -73,5 +73,9 @@ def overlay(
     :return: The clipped feature class
     :rtype: FeatureClass
     """
-    gdf = gpd.overlay(fc1._data, fc2._data, how=how, **kwargs)
+    if kwargs:
+        kwargs['how']=how
+        gdf = gpd.overlay(fc1._data, fc2._data, **kwargs)
+    else:
+        gdf = gpd.overlay(fc1._data, fc2._data, how=how)
     return FeatureClass(gdf)

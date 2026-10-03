@@ -10,7 +10,6 @@ import shapely
 
 import footbridge as ft
 
-
 SAMPLES = 1000
 
 

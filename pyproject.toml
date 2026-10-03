@@ -55,3 +55,10 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/footbridge"]
+
+[tool.ty.environment]
+python = ".pixi/envs/dev"
+root = ["./src"]
+
+[tool.ty.src]
+include = ["./src", "./tests"]

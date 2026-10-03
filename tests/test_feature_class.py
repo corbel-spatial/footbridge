@@ -93,11 +93,11 @@ def test_setitem(gdf_points):
         fc1[("s", "geometry")] = None
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        fc1[(0, dict())] = None
+        fc1[(0, {})] = None
 
 
 def test_crs(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
 
     for fc in gdb.fcs:
         assert isinstance(fc.crs, pyproj.crs.CRS)
@@ -107,13 +107,13 @@ def test_crs(ft_gdb):
 
 
 def test_gdf(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
     for fc in gdb.fcs:
         assert isinstance(fc.gdf, gpd.GeoDataFrame)
 
 
 def test_geom_type(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    gdb, _gdb_path = ft_gdb
     for fc in gdb.fcs:
         assert fc.geom_type in (
             "Point",
@@ -133,7 +133,7 @@ def test_geometry(gdf_polygons):
     fc1 = ft.FeatureClass(gdf_polygons)
     assert isinstance(fc1.geometry.bounds, pd.DataFrame)
     with pytest.raises(AttributeError):
-        fc1.geometry = False  # noqa
+        fc1.geometry = False
 
     fc2 = ft.FeatureClass()
     assert fc2.geometry is None

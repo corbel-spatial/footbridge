@@ -5,12 +5,11 @@ import geojson
 import pandas as pd
 import xmltodict
 
-from ._core import fc_to_gdf, list_layers, list_datasets
-
+from ._core import fc_to_gdf, list_datasets, list_layers
 
 # Check for optional install of GDAL>=3.8 for raster support
 try:
-    from osgeo import gdal  # noqa # fmt: skip
+    from osgeo import gdal  # fmt: skip
 
     _gdal_installed = True
     _gdal_version = gdal.__version__
@@ -74,8 +73,7 @@ def fc_to_shp(
     if not fp.endswith(".shp"):
         fp += ".shp"
 
-    if "driver" in kwargs:
-        del kwargs["driver"]
+    kwargs.pop("driver", None)
 
     gdf.to_file(fp, **kwargs)
 
@@ -97,7 +95,7 @@ def get_info(gdb_path: os.PathLike | str) -> dict:
     if not os.path.isdir(gdb_path):
         raise TypeError(f"{gdb_path} is not a directory")
 
-    result = dict()
+    result = {}
 
     with open(os.path.join(os.path.abspath(gdb_path), "a00000004.gdbtable"), "rb") as f:
         gdbtable = f.read()
@@ -137,7 +135,7 @@ def get_info(gdb_path: os.PathLike | str) -> dict:
                     .replace("Info", "")
                 )
                 if root_name not in result:
-                    result[root_name] = list()
+                    result[root_name] = []
                 result[root_name].append(xml_dict)
 
     return result
@@ -181,7 +179,7 @@ def list_rasters(gdb_path: os.PathLike | str) -> list[str]:
     for fc in fcs:
         if fc in rasters:
             rasters.remove(fc)
-    for fd in fds.keys():
+    for fd in fds:
         if fd in rasters:
             rasters.remove(fd)
     return rasters

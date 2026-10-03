@@ -2,10 +2,10 @@ import os
 import re
 import shutil
 import uuid
-from collections.abc import MutableMapping, MutableSequence
-from typing import Any, Iterator,Literal, Sequence
-from uuid import uuid4
 import warnings
+from collections.abc import Iterator, MutableMapping, MutableSequence, Sequence
+from typing import Any, Literal
+from uuid import uuid4
 
 import geojson
 import geopandas as gpd
@@ -27,7 +27,7 @@ class FeatureClass(MutableSequence):
     # noinspection PyTypeHints
     def __init__(
         self,
-        src: "None | os.PathLike | str | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None, # noqa: F821
+        src: "None | os.PathLike | str | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None,  # ty: ignore[unresolved-reference]  # noqa: F821
     ):
         """
         Initializes the geospatial data container by parsing the source and extracting
@@ -46,25 +46,23 @@ class FeatureClass(MutableSequence):
         :raises TypeError: Raised when the provided source type is unsupported or invalid
 
         """
-        self._data: gpd.GeoDataFrame | None = None
-        self._geom_type: type[shapely.Geometry] | None = None
+        self._data: gpd.GeoDataFrame = gpd.GeoDataFrame()
+        self._geom_type: shapely.Geometry | None = None
 
         # parse src
         if isinstance(src, gpd.GeoDataFrame):
             self._data = src.copy(deep=True)
 
         elif isinstance(src, gpd.GeoSeries):
-            self._data = gpd.GeoDataFrame(geometry=src.copy(deep=True))
+            self._data = gpd.GeoDataFrame(geometry=src.copy(deep=True))  # ty: ignore[no-matching-overload]
 
-        elif isinstance(src, pd.DataFrame) or isinstance(src, pd.Series):
+        elif isinstance(src, (pd.DataFrame, pd.Series)):
             self._data = gpd.GeoDataFrame(src.copy(deep=True))
 
         elif isinstance(src, FeatureClass):
             self._data = src.gdf
 
-        elif isinstance(src, os.PathLike) or isinstance(
-            src, str
-        ):  # on load data from gdb
+        elif isinstance(src, (os.PathLike, str)):  # on load data from gdb
             src = os.path.abspath(src)
 
             if not os.path.splitext(src)[1] == "":  # path cannot have a file extension
@@ -114,7 +112,7 @@ class FeatureClass(MutableSequence):
 
     def __getitem__(
         self, index: "int | slice | Sequence[int | slice]"
-    ) -> gpd.GeoDataFrame:
+    ) -> gpd.GeoDataFrame:  # ty: ignore[invalid-method-override]
         """
         Retrieves rows or slices of the FeatureClass based on the given index.
 
@@ -143,7 +141,7 @@ class FeatureClass(MutableSequence):
             return self._data.iloc[index]
         elif isinstance(index, tuple):
             if slice in [type(x) for x in index]:
-                c = list()
+                c = []
                 for idx in index:
                     if isinstance(idx, slice):
                         c.append(self._data.iloc[idx])
@@ -205,7 +203,7 @@ class FeatureClass(MutableSequence):
         if not isinstance(column, int) and not isinstance(column, str):
             raise TypeError("Column index must be an integer or a column name string")
 
-        if type(column) is int:
+        if isinstance(column, int):
             self._data.iat[row, column] = value
         else:
             self._data.at[row, column] = value
@@ -226,7 +224,7 @@ class FeatureClass(MutableSequence):
         return self._data
 
     @property
-    def geom_type(self) -> None | shapely.Geometry:
+    def geom_type(self) -> shapely.Geometry | None:
         """
         The geometry type of the FeatureClass, e.g., :class:`shapely.Point`, :class:`shapely.LineString`, :class:`shapely.Polygon`; defaults to :code:`None`
 
@@ -308,10 +306,10 @@ class FeatureClass(MutableSequence):
             result: pd.Series = result.map(lambda x: expression)
         else:
             # parse an expression that contains column names
-            col_names = str()  # parsed names of DataFrame columns
+            col_names = ""  # parsed names of DataFrame columns
             col_names_n = 0
             parsed_expression = (
-                str()
+                ""
             )  # all parts of the expression that are not column names
             col_name_mode = False  # whether we're currently parsing a column name
             for char in expression:
@@ -465,7 +463,7 @@ class FeatureClass(MutableSequence):
         self,
         gdb_path: os.PathLike | str,
         fc_name: str,
-        feature_dataset: str = None,
+        feature_dataset: str | None = None,
         overwrite: bool = False,
     ) -> None:
         """
@@ -500,7 +498,7 @@ class FeatureClass(MutableSequence):
         :param block: If True, waits for user to close the plot, defaults to True
         :type block: bool, optional
         """
-        fig, ax = plt.subplots()
+        _fig, ax = plt.subplots()
         self._data.geometry.plot(ax=ax)
         plt.show(block=block)
         plt.close()
@@ -591,7 +589,7 @@ class FeatureClass(MutableSequence):
         self._data.sort_values(by=field_name, ascending=ascending, inplace=True)
 
     def to_json(
-        self, fp: str | os.PathLike = None, indent: None | int = None, **kwargs
+        self, fp: str | os.PathLike | None = None, indent: None | int = None, **kwargs
     ) -> None | geojson.FeatureCollection:
         gjs = geojson.loads(self._data.to_json(**kwargs))
 
@@ -614,8 +612,7 @@ class FeatureClass(MutableSequence):
         if not fp.endswith(".shp"):
             fp += ".shp"
 
-        if "driver" in kwargs:
-            del kwargs["driver"]
+        kwargs.pop("driver", None)
 
         self._data.to_file(fp, **kwargs)
 
@@ -653,7 +650,7 @@ class FeatureDataset(MutableMapping):
 
         """
         self._data: dict[str, dict[str, FeatureClass] | set[GeoDatabase]] = {
-            "fcs": dict(),
+            "fcs": {},
             "gdbs": set(),
         }
         self._crs: pyproj.crs.CRS | None = None
@@ -758,8 +755,8 @@ class FeatureDataset(MutableMapping):
                 )
 
         for gdb in self._data["gdbs"]:
-            for fds_name, fds in gdb.items():
-                for fc_name, fc in fds.items():
+            for fds in gdb.values():
+                for fc_name in fds:
                     if key == fc_name:
                         raise KeyError(f"FeatureClass name already in use: {key}")
 
@@ -857,7 +854,7 @@ class GeoDatabase(MutableMapping):
         :type contents: dict[str : FeatureClass | FeatureDataset], optional
 
         """
-        self._data: dict[str | None, FeatureDataset] = dict()
+        self._data: dict[str | None, FeatureDataset] = {}
         self._uuid: uuid.UUID = uuid4()  # for self.__hash__()
 
         if path:  # load from disk
@@ -1008,7 +1005,7 @@ class GeoDatabase(MutableMapping):
         :rtype: dict[str, FeatureClass]
 
         """
-        fcs = dict()
+        fcs = {}
         for fds in self._data.values():
             for fc_name, fc in fds.items():
                 fcs[fc_name] = fc
@@ -1023,9 +1020,9 @@ class GeoDatabase(MutableMapping):
         Equivalent to :code:`GeoDatabase.fc_dict.keys()`
 
         """
-        fc_names = list()
+        fc_names = []
         for fds in self._data.values():
-            for fc_name in fds.keys():
+            for fc_name in fds:
                 fc_names.append(fc_name)
         return fc_names
 
@@ -1037,7 +1034,7 @@ class GeoDatabase(MutableMapping):
 
         Equivalent to :code:`GeoDatabase.fc_dict.values()`
         """
-        fcs = list()
+        fcs = []
         for fds in self._data.values():
             for fc in fds.values():
                 fcs.append(fc)
@@ -1114,8 +1111,8 @@ def sanitize_gdf_geometry(
         "MultiLineString",
         "Polygon",
         "MultiPolygon",
-        None,
-    ],
+
+    ] | None,
     gpd.GeoDataFrame,
 ]:
     """
@@ -1164,7 +1161,7 @@ def sanitize_gdf_geometry(
 
     elif len(geoms) == 2:
         if "Point" in geoms and "MultiPoint" in geoms:
-            new_geom = list()
+            new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
                 if feature is None:
                     new_geom.append(shapely.MultiPoint())
@@ -1179,7 +1176,7 @@ def sanitize_gdf_geometry(
             return "MultiPoint", gdf
 
         elif "LineString" in geoms and "LinearRing" in geoms:
-            new_geom = list()
+            new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
                 if feature is None:
                     new_geom.append(shapely.LineString())
@@ -1193,13 +1190,11 @@ def sanitize_gdf_geometry(
         elif "MultiLineString" in geoms and (
                 "LineString" in geoms or "LinearRing" in geoms
         ):
-            new_geom = list()
+            new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
                 if feature is None:
                     new_geom.append(shapely.MultiLineString())
-                elif isinstance(feature, shapely.LineString) or isinstance(
-                        feature, shapely.LinearRing
-                ):
+                elif isinstance(feature, (shapely.LineString, shapely.LinearRing)):
                     try:
                         new_geom.append(shapely.MultiLineString({feature}))
                     except shapely.errors.EmptyPartError:
@@ -1210,7 +1205,7 @@ def sanitize_gdf_geometry(
             return "MultiLineString", gdf
 
         elif "Polygon" in geoms and "MultiPolygon" in geoms:
-            new_geom = list()
+            new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
                 if feature is None:
                     new_geom.append(shapely.MultiPolygon())
@@ -1234,13 +1229,11 @@ def sanitize_gdf_geometry(
                 and "MultiLineString" in geoms
                 and "LinearRing" in geoms
         ):
-            new_geom = list()
+            new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
                 if feature is None:
                     new_geom.append(shapely.MultiLineString())
-                elif isinstance(feature, shapely.LineString) or isinstance(
-                        feature, shapely.LinearRing
-                ):
+                elif isinstance(feature, (shapely.LineString, shapely.LinearRing)):
                     try:
                         new_geom.append(shapely.MultiLineString([feature]))
                     except shapely.errors.EmptyPartError:
@@ -1291,11 +1284,11 @@ def fc_to_gdf(
 
 
 def gdf_to_fc(
-        gdf: gpd.GeoDataFrame | gpd.GeoSeries,  # noqa
+        gdf: gpd.GeoDataFrame | gpd.GeoSeries,
         gdb_path: os.PathLike | str,
         fc_name: str,
-        feature_dataset: str = None,
-        geometry_type: str = None,
+        feature_dataset: str | None = None,
+        geometry_type: str | None = None,
         overwrite: bool = False,
         compatibility: bool = True,
         reindex: bool = False,
@@ -1330,7 +1323,7 @@ def gdf_to_fc(
 
     """
     if not isinstance(gdf, gpd.GeoDataFrame):
-        if isinstance(gdf, gpd.GeoSeries) or isinstance(gdf, pd.DataFrame):
+        if isinstance(gdf, (gpd.GeoSeries, pd.DataFrame)):
             gdf = gpd.GeoDataFrame(gdf)
         else:
             raise TypeError(
@@ -1338,8 +1331,8 @@ def gdf_to_fc(
             )
 
     layer_options = {
-        "TARGET_ARCGIS_VERSION": True if compatibility else False,
-        "OPENFILEGDB_IN_MEMORY_SPI": True if reindex else False,
+        "TARGET_ARCGIS_VERSION": bool(compatibility),
+        "OPENFILEGDB_IN_MEMORY_SPI": bool(reindex),
         "FEATURE_DATASET": feature_dataset,
     }
 
@@ -1401,7 +1394,7 @@ def list_datasets(gdb_path: os.PathLike | str) -> dict[str | None, list[str]]:
 
     fcs = list_layers(gdb_path)
     if len(fcs) == 0:  # no feature classes returns empty dict
-        return dict()
+        return {}
 
     # get \feature_dataset\feature_class paths
     with open(gdbtable, "r", encoding="MacRoman") as f:
@@ -1411,10 +1404,10 @@ def list_datasets(gdb_path: os.PathLike | str) -> dict[str | None, list[str]]:
         contents,
     )
     # assemble output
-    out = dict()
+    out = {}
     for fds, fc in re_matches:
         if fds not in out:
-            out[fds] = list()
+            out[fds] = []
         out[fds].append(fc)
         if fc in fcs:
             fcs.remove(fc)
@@ -1444,4 +1437,4 @@ def list_layers(gdb_path: os.PathLike | str) -> list[str]:
         lyrs = gpd.list_layers(gdb_path)
         return lyrs["name"].to_list()
     except DataSourceError:
-        return list()
+        return []

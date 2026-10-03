@@ -11,11 +11,11 @@ import footbridge as ft
 
 def test_fc_to_json(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
-    for fc_name, fc in gdb.fc_dict.items():
+    for fc_name in gdb.fc_dict:
         gjs = ft.utils.fc_to_json(gdb_path, fc_name)
         assert isinstance(gjs, geojson.FeatureCollection)
 
-    for fc_name, fc in gdb.fc_dict.items():
+    for fc_name in gdb.fc_dict:
         fp = str(tmp_path / fc_name) + ".geojson"
         ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
 
@@ -25,7 +25,7 @@ def test_fc_to_json(tmp_path, ft_gdb):
 
 def test_fc_to_parquet(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
-    for fc_name, fc in gdb.fc_dict.items():
+    for fc_name in gdb.fc_dict:
         fp = str(tmp_path / fc_name) + ".parquet"
         ft.utils.fc_to_parquet(gdb_path, fc_name, fp)
 
@@ -35,7 +35,7 @@ def test_fc_to_parquet(tmp_path, ft_gdb):
 
 def test_fc_to_shp(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
-    for fc_name, fc in gdb.fc_dict.items():
+    for fc_name in gdb.fc_dict:
         fp = str(tmp_path / fc_name) + ".shp"
         ft.utils.fc_to_shp(gdb_path, fc_name, fp)
 
@@ -44,7 +44,7 @@ def test_fc_to_shp(tmp_path, ft_gdb):
 
 
 def test_fc_to_gdf(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    _gdb, gdb_path = ft_gdb
     for fc in ft.utils.list_layers(gdb_path):
         gdf = ft.utils.fc_to_gdf(gdb_path, fc)
         assert isinstance(gdf, gpd.GeoDataFrame)
@@ -81,7 +81,7 @@ def test_gdf_to_fc(ft_gdb):
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
-        ft._core.gdf_to_fc(list(), gdb_path, "test")
+        ft._core.gdf_to_fc([], gdb_path, "test")
 
     with pytest.raises(TypeError):
         # noinspection PyTypeChecker
@@ -130,7 +130,7 @@ def test_get_info(tmp_path, esri_gdb):
 
 
 def test_list_datasets(ft_gdb, esri_gdb):
-    gdb, gdb_path = ft_gdb
+    _gdb, gdb_path = ft_gdb
     fds1 = ft.utils.list_datasets(gdb_path)
     assert len(fds1) == 2
     for k, v in fds1.items():
@@ -152,7 +152,7 @@ def test_list_datasets(ft_gdb, esri_gdb):
 
 
 def test_list_layers(ft_gdb):
-    gdb, gdb_path = ft_gdb
+    _gdb, gdb_path = ft_gdb
     lyrs = ft.utils.list_layers(gdb_path)
     assert len(lyrs) == 6
 
@@ -172,7 +172,7 @@ def test_list_rasters(ft_gdb, esri_gdb):
     for raster in rasters:
         assert isinstance(raster, str)
 
-    gdb, gdb_path = ft_gdb
+    _gdb, gdb_path = ft_gdb
     rasters = ft.utils.list_rasters(gdb_path)
     assert len(rasters) == 0
 
