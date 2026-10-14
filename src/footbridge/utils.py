@@ -2,7 +2,6 @@ import os
 import re
 from pathlib import Path
 
-import geojson
 import pandas as pd
 import xmltodict
 

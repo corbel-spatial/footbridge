@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
-import geojson
 import geopandas as gpd
 import numpy as np
 import pandas as pd
