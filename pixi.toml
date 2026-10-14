@@ -11,8 +11,7 @@ version = "*"
 hatchling = "*"
 
 [dependencies]
-python = ">=3.14.8,<3.16"
-#python = ">=3.15.0,<3.16"
+gdal = ">=3.13.3,<4"
 geopandas = ">=1.2.0,<2"
 matplotlib = ">=3.11.2,<4"
 xmltodict = ">=1.0.4,<2"
@@ -20,32 +19,45 @@ xmltodict = ">=1.0.4,<2"
 [pypi-dependencies]
 footbridge = { path = ".", editable = true }
 
-[environments]
-default = { features = ["default"], solve-group = "default" }
-dev = { features = ["dev", "docs"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "docs" }
-
-[feature.dev.dependencies]
-duckdb = ">=1.5.6,<2"
+[environments.dev.dependencies]
+python = ">=3.15.0,<3.16"
 pandas-stubs = ">=3.0.5.260914,<4"
 pixi-pycharm = ">=0.0.12,<0.0.13"
 pytest = ">=9.1.1,<10"
 pytest-cov = ">=7.1.0,<8"
 pytest-xdist = ">=3.8.0,<4"
 ruff = ">=0.17.0,<0.18"
-sedonadb = ">=0.5.0,<0.6"
 ty = ">=0.0.87,<0.0.88"
+types-geopandas = ">=1.1.4.20261006,<2"
 types-shapely = ">=2.1.0.20260402,<3"
+types-xmltodict = ">=1.0.1.20250920,<2"
 
-[feature.dev.tasks]
+[environments.dev.tasks]
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
 lint = { depends-on = ["lint-ruff", "lint-ty"] }
 lint-ruff = "ruff format ./src ./tests"
 lint-ty = "ty check ./src ./tests"
-test = "pytest -n auto ./tests"
+test = { cmd = "pytest -n auto ./tests", depends-on = ["lint"] }
 
-[feature.docs]
-# dependencies should match docs/requirements.txt
-dependencies = { jupyter = ">=1.1.1,<2", myst-parser = ">=5.1.0,<6", nbsphinx = ">=0.9.8,<0.10", notebook = ">=7.6.3,<8", pydata-sphinx-theme = ">=0.23.0,<0.24", sphinx = ">=9.1.0,<10", sphinx-copybutton = ">=0.5.2,<0.6" }
-tasks = { docs = "./docs/make html" }
-target = { win-64 = { tasks = { docs = "./docs/make.bat html" } } }
+[environments.docs.dependencies]
+python = ">=3.15.0,<3.16"
+# build deps should match docs/requirements.txt
+jupyter = ">=1.1.1,<2"
+myst-parser = ">=5.1.0,<6"
+nbsphinx = ">=0.9.8,<0.10"
+notebook = ">=7.6.3,<8"
+pydata-sphinx-theme = ">=0.23.0,<0.24"
+sphinx = ">=9.1.0,<10"
+sphinx-copybutton = ">=0.5.2,<0.6"
+
+[environments.docs.tasks]
+docs = "make -C ./docs html"
+
+[environments.docs.target.win-64.tasks]
+docs = "./docs/make.bat html"
+
+[environments.demo.target.win-64.dependencies]
+python = ">=3.14.8,<3.15"  # TODO bump to 3.15
+# deps for notebook demos
+duckdb = ">=1.5.6,<2"
+sedonadb = ">=0.5.0,<0.6"

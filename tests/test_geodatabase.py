@@ -15,7 +15,7 @@ def test_instantiate(ft_gdb) -> None:
     assert len(gdb2.fc_dict) == 7
 
     with pytest.raises(FileNotFoundError):
-        gdb3 = ft.GeoDatabase("doesnotexist.gdb")  # noqa: F841
+        _ = ft.GeoDatabase("doesnotexist.gdb")
 
 
 def test_delitem(ft_gdb) -> None:
@@ -88,7 +88,7 @@ def test_getitem(ft_gdb) -> None:
         _ = gdb[999]
 
     with pytest.raises(KeyError):
-        _ = gdb[[]]  # noqa: F841
+        _ = gdb[[]]
 
     fc = gdb["test_points1"]
     assert isinstance(fc, ft.FeatureClass)
@@ -119,7 +119,6 @@ def test_setitem(ft_gdb) -> None:
             new_gdb[fds_name] = fds
 
     with pytest.raises(TypeError):
-        # noinspection PyTypeChecker
         gdb["bad"] = 99
 
 

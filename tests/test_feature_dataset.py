@@ -1,11 +1,12 @@
 import geopandas as gpd
 import pytest
 import shapely
+from pyproj.crs import CRS
 
 import footbridge as ft
 
 
-def test_instantiate(ft_gdb):
+def test_instantiate(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds_name, fds in gdb.items():
         assert isinstance(fds_name, str) or fds_name is None
@@ -21,7 +22,7 @@ def test_instantiate(ft_gdb):
     assert isinstance(fds2, ft.FeatureDataset)
 
 
-def test_delitem(ft_gdb):
+def test_delitem(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         fcs = list(fds.fc_dict.keys())
@@ -30,7 +31,7 @@ def test_delitem(ft_gdb):
         assert len(fds) == 0
 
 
-def test_fc_dict(ft_gdb):
+def test_fc_dict(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         for fc_name, fc in fds.fc_dict.items():
@@ -38,21 +39,21 @@ def test_fc_dict(ft_gdb):
             assert isinstance(fc, ft.FeatureClass)
 
 
-def test_fc_names(ft_gdb):
+def test_fc_names(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         for fc_name in fds.fc_names:
             assert isinstance(fc_name, str)
 
 
-def test_fcs(ft_gdb):
+def test_fcs(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         for fc in fds.fcs:
             assert isinstance(fc, ft.FeatureClass)
 
 
-def test_getitem(ft_gdb):
+def test_getitem(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         fc_names = fds.keys()
@@ -60,23 +61,23 @@ def test_getitem(ft_gdb):
             assert isinstance(fds[fc_name], ft.FeatureClass)
         assert isinstance(fds[0], ft.FeatureClass)
         with pytest.raises(IndexError):
-            f = fds[999]  # noqa: F841
+            _ = fds[999]
 
 
-def test_iter(ft_gdb):
+def test_iter(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         for fc_name in fds:
             assert isinstance(fds[fc_name], ft.FeatureClass)
 
 
-def test_len(ft_gdb):
+def test_len(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         assert len(fds) == 3
 
 
-def test_setitem(ft_gdb):
+def test_setitem(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
 
     with pytest.raises(TypeError):
@@ -103,7 +104,6 @@ def test_setitem(ft_gdb):
         assert len(fds) == 6 or len(fds) == 8
 
         with pytest.raises(TypeError):
-            # noinspection PyTypeChecker
             fds.__setitem__("bad", 0)
 
         with pytest.raises(ValueError):
@@ -113,7 +113,7 @@ def test_setitem(ft_gdb):
             fds.__setitem__("bad!@#$", ft.FeatureClass())
 
 
-def test_feature_classes(ft_gdb):
+def test_feature_classes(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.values():
         for fc_name, fc in fds.fc_dict.items():
@@ -121,20 +121,39 @@ def test_feature_classes(ft_gdb):
             assert isinstance(fc, ft.FeatureClass)
 
 
-def test_crs(ft_gdb):
+def test_crs(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for idx, fds in enumerate(gdb.values()):
-        test_fc = ft.FeatureClass()
+        test_fc = ft.FeatureClass(
+            gpd.GeoDataFrame(
+                geometry=gpd.GeoSeries(
+                    [
+                        shapely.LineString([(0, 1), (1, 1)]),
+                    ]
+                ),
+                crs="EPSG:3857",
+            )
+        )
         with pytest.raises(AttributeError):
             assert test_fc.crs != fds.crs
             fds[f"bad_fc_{idx}"] = test_fc
 
     fds2 = ft.FeatureDataset()
-    fds2["fc1"] = ft.FeatureClass(gpd.GeoDataFrame(geometry=[], crs="EPSG:4326"))
+    fds2["fc1"] = ft.FeatureClass(
+        gpd.GeoDataFrame(
+            geometry=gpd.GeoSeries(
+                [
+                    shapely.LineString([(0, 1), (1, 1)]),
+                ]
+            ),
+            crs="EPSG:4326",
+        )
+    )
+    assert isinstance(fds2.crs, CRS)
     assert fds2.crs.equals("EPSG:4326")
 
 
-def test_enforce_crs(ft_gdb):
+def test_enforce_crs(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fds in gdb.fds_dict.values():
         assert isinstance(fds.enforce_crs, bool)

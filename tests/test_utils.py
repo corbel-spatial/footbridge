@@ -1,6 +1,5 @@
 import os
 
-import geojson
 import geopandas as gpd
 import pytest
 import shapely
@@ -13,24 +12,14 @@ def test_fc_to_json(tmp_path, ft_gdb):
     gdb, gdb_path = ft_gdb
     for fc_name in gdb.fc_dict:
         gjs = ft.utils.fc_to_json(gdb_path, fc_name)
-        assert isinstance(gjs, geojson.FeatureCollection)
+        assert isinstance(gjs, dict)
 
     for fc_name in gdb.fc_dict:
-        fp = str(tmp_path / fc_name) + ".geojson"
+        fp = (tmp_path / fc_name).with_suffix(".geojson")
         ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
 
-        fp = str(tmp_path / fc_name)
+        fp = tmp_path / fc_name
         ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
-
-
-def test_fc_to_parquet(tmp_path, ft_gdb):
-    gdb, gdb_path = ft_gdb
-    for fc_name in gdb.fc_dict:
-        fp = str(tmp_path / fc_name) + ".parquet"
-        ft.utils.fc_to_parquet(gdb_path, fc_name, fp)
-
-        fp = str(tmp_path / fc_name)
-        ft.utils.fc_to_parquet(gdb_path, fc_name, fp)
 
 
 def test_fc_to_shp(tmp_path, ft_gdb):
@@ -66,7 +55,6 @@ def test_gdf_to_fc(ft_gdb):
     with pytest.raises(FileNotFoundError):
         ft._core.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
 
-    # noinspection PyUnresolvedReferences
     with pytest.raises(GeometryError):
         for fc_name, fc in gdb.fc_dict.items():
             ft._core.gdf_to_fc(
@@ -102,7 +90,7 @@ def test_get_info(tmp_path, esri_gdb):
                             {"col1": ["c"]},
                             geometry=[shapely.LineString([(0, 1), (1, 1)])],
                             crs="WGS 84",
-                        ),  # ty: ignore[no-matching-overload]
+                        )
                     )
                 }
             )

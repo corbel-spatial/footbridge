@@ -2,6 +2,7 @@ import os
 import uuid
 import zipfile
 from importlib.util import find_spec
+from pathlib import Path
 from random import uniform
 
 import geopandas as gpd
@@ -14,37 +15,36 @@ SAMPLES = 1000
 
 
 @pytest.fixture
-def samples():
+def samples() -> int:
     return SAMPLES
 
 
 @pytest.fixture
-def gdb_path(tmp_path_factory):
-    gdb_path = tmp_path_factory.mktemp("test") / "test.gdb"
-    return str(gdb_path)
+def gdb_path(tmp_path_factory) -> Path:
+    return tmp_path_factory.mktemp("test") / "test.gdb"
 
 
 @pytest.fixture
-def gdf_points():
+def gdf_points() -> gpd.GeoDataFrame:
     test_points = [
-        shapely.Point(uniform(-170, 170), uniform(-70, 70)) for i in range(SAMPLES)
+        shapely.Point(uniform(-170, 170), uniform(-70, 70)) for _ in range(SAMPLES)
     ]
     test_fields = {
-        "sample1": [str(uuid.uuid4()) for i in range(SAMPLES)],
-        "sample2": [str(uuid.uuid4()) for i in range(SAMPLES)],
-        "sample3": [str(uuid.uuid4()) for i in range(SAMPLES)],
+        "sample1": [str(uuid.uuid4()) for _ in range(SAMPLES)],
+        "sample2": [str(uuid.uuid4()) for _ in range(SAMPLES)],
+        "sample3": [str(uuid.uuid4()) for _ in range(SAMPLES)],
     }
-    return gpd.GeoDataFrame(data=test_fields, crs="EPSG:4326", geometry=test_points)  # ty: ignore[no-matching-overload]
+    return gpd.GeoDataFrame(data=test_fields, crs="EPSG:4326", geometry=test_points)
 
 
 @pytest.fixture
-def fc_points(gdb_path, gdf_points):
+def fc_points(gdb_path, gdf_points) -> Path:
     ft._core.gdf_to_fc(gdf_points, gdb_path, "test_points")
-    return os.path.join(gdb_path, "test_points")
+    return gdb_path / "test_points"
 
 
 @pytest.fixture
-def fds_fc_points(tmp_path, gdf_points):
+def fds_fc_points(tmp_path, gdf_points) -> Path:
     gdb_path = tmp_path / "fc_points.gdb"
     ft._core.gdf_to_fc(
         gdf=gdf_points,
@@ -52,30 +52,37 @@ def fds_fc_points(tmp_path, gdf_points):
         fc_name="test_points",
         feature_dataset="test_dataset",
     )
-    return os.path.join(gdb_path, "test_dataset", "test_points")
+    return gdb_path / "test_dataset" / "test_points"
 
 
 @pytest.fixture
-def gdf_polygons(gdf_points):
-    polys = gdf_points.to_crs("EPSG:3857")
+def gdf_polygons(gdf_points) -> gpd.GeoDataFrame:
+    polys = gdf_points.copy().to_crs("EPSG:3857")
     polys = polys.buffer(5.0)
     polys = polys.to_crs("EPSG:4326")
-    return gpd.GeoDataFrame(geometry=polys)  # ty: ignore[no-matching-overload]
+    return gpd.GeoDataFrame(geometry=polys)
 
 
 @pytest.fixture
-def gdf_lines(gdf_polygons):
-    return gpd.GeoDataFrame(geometry=gdf_polygons.boundary)  # ty: ignore[no-matching-overload]
+def gdf_lines(gdf_polygons) -> gpd.GeoDataFrame:
+    return gpd.GeoDataFrame(geometry=gdf_polygons.boundary, crs=gdf_polygons.crs)
 
 
 @pytest.fixture
-def ft_gdb(gdb_path, gdf_points, gdf_lines, gdf_polygons):
+def ft_gdb(
+    gdb_path, gdf_points, gdf_lines, gdf_polygons
+) -> tuple[ft.GeoDatabase, Path]:
     gdb = ft.GeoDatabase()
     gdb["test_points1"] = ft.FeatureClass(gdf_points)
+    assert isinstance(gdb["test_points1"], ft.FeatureClass)
     assert gdb["test_points1"].geom_type == "Point"
+
     gdb["test_lines1"] = ft.FeatureClass(gdf_lines)
+    assert isinstance(gdb["test_lines1"], ft.FeatureClass)
     assert gdb["test_lines1"].geom_type == "LineString"
+
     gdb["test_polygons1"] = ft.FeatureClass(gdf_polygons)
+    assert isinstance(gdb["test_polygons1"], ft.FeatureClass)
     assert gdb["test_polygons1"].geom_type == "Polygon"
 
     fds = ft.FeatureDataset(crs=gdf_points.crs)
@@ -89,7 +96,7 @@ def ft_gdb(gdb_path, gdf_points, gdf_lines, gdf_polygons):
 
 
 @pytest.fixture
-def esri_gdb(tmp_path):
+def esri_gdb(tmp_path) -> Path:
     z = os.path.join("tests", "test_data.gdb.zip")
     try:
         gdb_path = os.path.abspath(os.path.join("..", z))
@@ -98,11 +105,11 @@ def esri_gdb(tmp_path):
         gdb_path = os.path.abspath(os.path.join(".", z))
     zf = zipfile.ZipFile(gdb_path, "r")
     zf.extractall(tmp_path)
-    return os.path.join(tmp_path, "test_data.gdb")
+    return tmp_path / "test_data.gdb"
 
 
 @pytest.fixture
-def gdal_version():
+def gdal_version() -> str | None:
     if find_spec("osgeo") is not None:
         from osgeo import gdal
 

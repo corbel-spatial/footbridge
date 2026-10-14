@@ -23,12 +23,11 @@ def buffer(fc: FeatureClass, distance: float, **kwargs: dict) -> FeatureClass:
 
     """
     gdf = fc.gdf
-    new_geom = gdf.buffer(distance=distance, **kwargs)
+    new_geom = gdf.buffer(distance=distance, **kwargs)  # ty: ignore[invalid-argument-type]
     gdf.set_geometry(new_geom, inplace=True)
     return FeatureClass(gdf)
 
 
-# noinspection PyProtectedMember
 def clip(fc: FeatureClass, mask_fc: FeatureClass, **kwargs: dict) -> FeatureClass:
     """
     Clip a feature class by a mask feature class.
@@ -44,11 +43,10 @@ def clip(fc: FeatureClass, mask_fc: FeatureClass, **kwargs: dict) -> FeatureClas
     :return: The clipped feature class
     :rtype: FeatureClass
     """
-    gdf = gpd.clip(gdf=fc._data, mask=mask_fc._data, **kwargs)
+    gdf = gpd.clip(gdf=fc._data, mask=mask_fc._data, **kwargs)  # ty: ignore[invalid-argument-type]
     return FeatureClass(gdf)
 
 
-# noinspection PyProtectedMember
 def overlay(
     fc1: FeatureClass,
     fc2: FeatureClass,
@@ -73,9 +71,5 @@ def overlay(
     :return: The clipped feature class
     :rtype: FeatureClass
     """
-    if kwargs:
-        kwargs["how"] = how  # ty: ignore[invalid-assignment]
-        gdf = gpd.overlay(df1=fc1._data, df2=fc2._data, **kwargs)  # ty: ignore[invalid-argument-type]
-    else:
-        gdf = gpd.overlay(df1=fc1._data, df2=fc2._data, how=how)
+    gdf = gpd.overlay(df1=fc1._data, df2=fc2._data, how=how, **kwargs)  # ty: ignore[invalid-argument-type]
     return FeatureClass(gdf)
