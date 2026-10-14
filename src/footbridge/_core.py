@@ -4,6 +4,7 @@ import shutil
 import uuid
 import warnings
 from collections.abc import Iterator, MutableMapping, MutableSequence, Sequence
+from pathlib import Path
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -47,7 +48,17 @@ class FeatureClass(MutableSequence):
 
         """
         self._data: gpd.GeoDataFrame = gpd.GeoDataFrame()
-        self._geom_type: shapely.Geometry | None = None
+        self._geom_type: (
+            Literal[
+                "Point",
+                "MultiPoint",
+                "LineString",
+                "MultiLineString",
+                "Polygon",
+                "MultiPolygon",
+            ]
+            | None
+        ) = None
 
         # parse src
         if isinstance(src, gpd.GeoDataFrame):
@@ -138,7 +149,7 @@ class FeatureClass(MutableSequence):
         elif isinstance(index, slice):
             return self._data[index]
         elif isinstance(index, list):
-            return self._data.iloc[index]
+            return self._data.iloc[index]  # ty: ignore[invalid-argument-type]
         elif isinstance(index, tuple):
             if slice in [type(x) for x in index]:
                 c = []
@@ -149,7 +160,7 @@ class FeatureClass(MutableSequence):
                         c.append(self._data.iloc[[idx]])
                 return gpd.GeoDataFrame(pd.concat(c))
             else:
-                return self._data.iloc[list(index)]
+                return self._data.iloc[list(index)]  # ty: ignore[invalid-argument-type]
         else:
             raise KeyError(f"Invalid index type: {type(index)}")
 
@@ -224,7 +235,19 @@ class FeatureClass(MutableSequence):
         return self._data
 
     @property
-    def geom_type(self) -> shapely.Geometry | None:
+    def geom_type(
+        self,
+    ) -> (
+        Literal[
+            "Point",
+            "MultiPoint",
+            "LineString",
+            "MultiLineString",
+            "Polygon",
+            "MultiPolygon",
+        ]
+        | None
+    ):
         """
         The geometry type of the FeatureClass, e.g., :class:`shapely.Point`, :class:`shapely.LineString`, :class:`shapely.Polygon`; defaults to :code:`None`
 
@@ -309,8 +332,8 @@ class FeatureClass(MutableSequence):
             col_names = ""  # parsed names of DataFrame columns
             col_names_n = 0
             parsed_expression = (
-                ""
-            )  # all parts of the expression that are not column names
+                ""  # all parts of the expression that are not column names
+            )
             col_name_mode = False  # whether we're currently parsing a column name
             for char in expression:
                 if char == "$" and not col_name_mode:  # start escaped sequence
@@ -335,7 +358,7 @@ class FeatureClass(MutableSequence):
                 # get row values
                 other_values = [f"'{other[row_idx]}'" for other in other_col_series]
                 # insert values and evaluate
-                result.loc[row_idx] = eval(parsed_expression.format(*other_values))
+                result.loc[row_idx] = eval(parsed_expression.format(*other_values))  # ty: ignore[invalid-assignment]
 
         if dt and result.dtype != dt:
             result = result.astype(dt)
@@ -456,7 +479,7 @@ class FeatureClass(MutableSequence):
 
         """
         fields = self._data.columns.to_list()
-        fields.insert(0, self._data.index.name)
+        fields.insert(0, str(self._data.index.name))
         return fields
 
     def save(
@@ -594,8 +617,9 @@ class FeatureClass(MutableSequence):
         gjs = geojson.loads(self._data.to_json(**kwargs))
 
         if fp:
-            if not fp.endswith(".json") or not fp.endswith(".geojson"):
-                fp += ".geojson"
+            fp = Path(fp)
+            if not fp.suffix in (".json", ".geojson"):
+                fp = fp.with_suffix(".geojson")
             with open(fp, "w") as f:
                 geojson.dump(gjs, f, indent=indent)
             return None
@@ -603,14 +627,16 @@ class FeatureClass(MutableSequence):
             return gjs
 
     def to_parquet(self, fp: str | os.PathLike, **kwargs) -> None:
-        if not fp.endswith(".parquet"):
-            fp += ".parquet"
+        fp = Path(fp)
+        if not fp.suffix == ".parquet":
+            fp = fp.with_suffix(".parquet")
 
         self._data.to_parquet(fp, **kwargs)
 
     def to_shp(self, fp: str | os.PathLike, **kwargs) -> None:
-        if not fp.endswith(".shp"):
-            fp += ".shp"
+        fp = Path(fp)
+        if not fp.suffix == ".shp":
+            fp = fp.with_suffix(".shp")
 
         kwargs.pop("driver", None)
 
@@ -1102,7 +1128,7 @@ class GeoDatabase(MutableMapping):
 
 
 def sanitize_gdf_geometry(
-        gdf: gpd.GeoDataFrame,
+    gdf: gpd.GeoDataFrame,
 ) -> tuple[
     Literal[
         "Point",
@@ -1111,8 +1137,8 @@ def sanitize_gdf_geometry(
         "MultiLineString",
         "Polygon",
         "MultiPolygon",
-
-    ] | None,
+    ]
+    | None,
     gpd.GeoDataFrame,
 ]:
     """
@@ -1188,7 +1214,7 @@ def sanitize_gdf_geometry(
             return "LineString", gdf
 
         elif "MultiLineString" in geoms and (
-                "LineString" in geoms or "LinearRing" in geoms
+            "LineString" in geoms or "LinearRing" in geoms
         ):
             new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
@@ -1211,7 +1237,7 @@ def sanitize_gdf_geometry(
                     new_geom.append(shapely.MultiPolygon())
                 elif isinstance(feature, shapely.Polygon):
                     try:
-                        new_geom.append(shapely.MultiPolygon([{feature}]))
+                        new_geom.append(shapely.MultiPolygon([{feature}]))  # ty: ignore[invalid-argument-type]
                     except (shapely.errors.EmptyPartError, TypeError):
                         new_geom.append(shapely.MultiPolygon())
                 else:
@@ -1225,9 +1251,9 @@ def sanitize_gdf_geometry(
             )
     elif len(geoms) == 3:
         if (
-                "LineString" in geoms
-                and "MultiLineString" in geoms
-                and "LinearRing" in geoms
+            "LineString" in geoms
+            and "MultiLineString" in geoms
+            and "LinearRing" in geoms
         ):
             new_geom = []
             for feature in gdf[gdf.active_geometry_name]:
@@ -1252,8 +1278,8 @@ def sanitize_gdf_geometry(
 
 
 def fc_to_gdf(
-        gdb_path: os.PathLike | str,
-        fc_name: str,
+    gdb_path: os.PathLike | str,
+    fc_name: str,
 ) -> gpd.GeoDataFrame:
     """Convert a feature class in a geodatabase on disk to a GeoDataFrame.
 
@@ -1284,14 +1310,14 @@ def fc_to_gdf(
 
 
 def gdf_to_fc(
-        gdf: gpd.GeoDataFrame | gpd.GeoSeries,
-        gdb_path: os.PathLike | str,
-        fc_name: str,
-        feature_dataset: str | None = None,
-        geometry_type: str | None = None,
-        overwrite: bool = False,
-        compatibility: bool = True,
-        reindex: bool = False,
+    gdf: gpd.GeoDataFrame | gpd.GeoSeries,
+    gdb_path: os.PathLike | str,
+    fc_name: str,
+    feature_dataset: str | None = None,
+    geometry_type: str | None = None,
+    overwrite: bool = False,
+    compatibility: bool = True,
+    reindex: bool = False,
 ):
     """
     Convert a GeoDataFrame or GeoSeries to a feature class in a file geodatabase on disk.
@@ -1354,7 +1380,7 @@ def gdf_to_fc(
         with warnings.catch_warnings():  # hide pyogrio driver warnings
             warnings.simplefilter("ignore")
             gdf.to_file(
-                gdb_path,
+                filename=gdb_path,  # ty: ignore[invalid-argument-type]
                 driver="OpenFileGDB",
                 layer=fc_name,
                 layer_options=layer_options,
@@ -1384,6 +1410,7 @@ def list_datasets(gdb_path: os.PathLike | str) -> dict[str | None, list[str]]:
         * https://github.com/rouault/dump_gdbtable/wiki/FGDB-Spec
 
     """
+    # noinspection DuplicatedCode
     gdb_path = os.path.abspath(gdb_path)
     if not os.path.exists(gdb_path):
         raise FileNotFoundError(gdb_path)

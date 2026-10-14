@@ -11,6 +11,8 @@ version = "*"
 hatchling = "*"
 
 [dependencies]
+python = ">=3.14.8,<3.15"
+#python = ">=3.15.0,<3.16"
 geojson = ">=3.3.0,<4"
 geopandas = ">=1.2.0,<2"
 gdal = ">=3.13.3,<4"
@@ -33,19 +35,20 @@ pixi-pycharm = ">=0.0.12,<0.0.13"
 pytest = ">=9.1.1,<10"
 pytest-cov = ">=7.1.0,<8"
 pytest-xdist = ">=3.8.0,<4"
-ruff = ">=0.16.10,<0.17"
-sedonadb = ">=0.4.1,<0.5"
-ty = ">=0.0.84,<0.0.85"
+ruff = ">=0.17.0,<0.18"
+sedonadb = ">=0.5.0,<0.6"
+ty = ">=0.0.87,<0.0.88"
 types-shapely = ">=2.1.0.20260402,<3"
 
 [feature.dev.tasks]
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
-lint = "ruff check ./src ./tests"
-lint-fmt = "ruff check --fix ./src ./tests && ruff format ./src ./tests"
+lint = { depends-on = ["lint-ruff", "lint-ty"] }
+lint-ruff = "ruff format ./src ./tests"
+lint-ty = "ty check ./src ./tests"
 test = "pytest -n auto ./tests"
 
 [feature.docs]
 # dependencies should match docs/requirements.txt
-dependencies = { jupyter = ">=1.1.1,<2", myst-parser = ">=5.1.0,<6", nbsphinx = ">=0.9.8,<0.10", notebook = ">=7.6.3,<8", pydata-sphinx-theme = ">=0.22.0,<0.23", sphinx = ">=9.1.0,<10", sphinx-copybutton = ">=0.5.2,<0.6" }
+dependencies = { jupyter = ">=1.1.1,<2", myst-parser = ">=5.1.0,<6", nbsphinx = ">=0.9.8,<0.10", notebook = ">=7.6.3,<8", pydata-sphinx-theme = ">=0.23.0,<0.24", sphinx = ">=9.1.0,<10", sphinx-copybutton = ">=0.5.2,<0.6" }
 tasks = { docs = "./docs/make html" }
 target = { win-64 = { tasks = { docs = "./docs/make.bat html" } } }

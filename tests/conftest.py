@@ -34,7 +34,7 @@ def gdf_points():
         "sample2": [str(uuid.uuid4()) for i in range(SAMPLES)],
         "sample3": [str(uuid.uuid4()) for i in range(SAMPLES)],
     }
-    return gpd.GeoDataFrame(test_fields, crs="EPSG:4326", geometry=test_points)
+    return gpd.GeoDataFrame(data=test_fields, crs="EPSG:4326", geometry=test_points)  # ty: ignore[no-matching-overload]
 
 
 @pytest.fixture
@@ -60,12 +60,12 @@ def gdf_polygons(gdf_points):
     polys = gdf_points.to_crs("EPSG:3857")
     polys = polys.buffer(5.0)
     polys = polys.to_crs("EPSG:4326")
-    return gpd.GeoDataFrame(geometry=polys)
+    return gpd.GeoDataFrame(geometry=polys)  # ty: ignore[no-matching-overload]
 
 
 @pytest.fixture
 def gdf_lines(gdf_polygons):
-    return gpd.GeoDataFrame(geometry=gdf_polygons.boundary)
+    return gpd.GeoDataFrame(geometry=gdf_polygons.boundary)  # ty: ignore[no-matching-overload]
 
 
 @pytest.fixture

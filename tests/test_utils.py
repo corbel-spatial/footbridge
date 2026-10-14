@@ -2,9 +2,9 @@ import os
 
 import geojson
 import geopandas as gpd
-import pyogrio
 import pytest
 import shapely
+from pyogrio.errors import GeometryError
 
 import footbridge as ft
 
@@ -49,8 +49,7 @@ def test_fc_to_gdf(ft_gdb):
         gdf = ft.utils.fc_to_gdf(gdb_path, fc)
         assert isinstance(gdf, gpd.GeoDataFrame)
     with pytest.raises(TypeError):
-        # noinspection PyTypeChecker
-        ft.utils.fc_to_gdf(gdb_path, 0)
+        ft.utils.fc_to_gdf(gdb_path, 0)  # ty: ignore[invalid-argument-type]
 
 
 def test_gdf_to_fc(ft_gdb):
@@ -68,7 +67,7 @@ def test_gdf_to_fc(ft_gdb):
         ft._core.gdf_to_fc(gpd.GeoDataFrame(), "thisfiledoesnotexist", "test")
 
     # noinspection PyUnresolvedReferences
-    with pytest.raises(pyogrio.errors.GeometryError):
+    with pytest.raises(GeometryError):
         for fc_name, fc in gdb.fc_dict.items():
             ft._core.gdf_to_fc(
                 gdf=fc.gdf,
@@ -80,12 +79,10 @@ def test_gdf_to_fc(ft_gdb):
             )
 
     with pytest.raises(TypeError):
-        # noinspection PyTypeChecker
-        ft._core.gdf_to_fc([], gdb_path, "test")
+        ft._core.gdf_to_fc([], gdb_path, "test")  # ty: ignore[invalid-argument-type]
 
     with pytest.raises(TypeError):
-        # noinspection PyTypeChecker
-        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")
+        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")  # ty: ignore[invalid-argument-type]
 
     ft._core.gdf_to_fc(
         gpd.GeoSeries([shapely.LineString([(0, 1), (1, 1)])]),
@@ -105,7 +102,7 @@ def test_get_info(tmp_path, esri_gdb):
                             {"col1": ["c"]},
                             geometry=[shapely.LineString([(0, 1), (1, 1)])],
                             crs="WGS 84",
-                        ),
+                        ),  # ty: ignore[no-matching-overload]
                     )
                 }
             )

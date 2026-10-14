@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 
 import geojson
 import pandas as pd
@@ -36,7 +37,7 @@ def fc_to_json(
 ) -> None | geojson.FeatureCollection:
     """Wraps geopandas.GeoDataFrame.to_json()"""
     gdf = fc_to_gdf(gdb_path=gdb_path, fc_name=fc_name)
-    gjs = geojson.loads(gdf.to_json(**kwargs))
+    gjs = geojson.loads(gdf.to_json(**kwargs))  # ty: ignore[invalid-argument-type]
 
     if fp:
         fp = str(fp)
@@ -54,28 +55,28 @@ def fc_to_parquet(
 ):
     """Wraps geopandas.GeoDataFrame.to_parquet()"""
     gdf = fc_to_gdf(gdb_path=gdb_path, fc_name=fc_name)
+    fp = Path(fp)
+    if not fp.suffix == ".parquet":
+        fp = fp.with_suffix(".parquet")
 
-    if not fp.endswith(".parquet"):
-        fp += ".parquet"
-
-    gdf.to_parquet(fp, **kwargs)
+    gdf.to_parquet(path=fp, **kwargs)  # ty: ignore[invalid-argument-type]
 
 
 def fc_to_shp(
     gdb_path: os.PathLike | str,
     fc_name: str,
-    fp: None | os.PathLike | str,
+    fp: os.PathLike | str,
     **kwargs: dict,
 ) -> None:
     """Wraps geopandas.GeoDataFrame.to_file(filename, driver="ESRI Shapefile")"""
     gdf = fc_to_gdf(gdb_path=gdb_path, fc_name=fc_name)
-
-    if not fp.endswith(".shp"):
-        fp += ".shp"
+    fp = Path(fp)
+    if not fp.suffix == ".shp":
+        fp = fp.with_suffix(".shp")
 
     kwargs.pop("driver", None)
 
-    gdf.to_file(fp, **kwargs)
+    gdf.to_file(filename=fp, **kwargs)  # ty: ignore[invalid-argument-type]
 
 
 def get_info(gdb_path: os.PathLike | str) -> dict:
@@ -141,7 +142,6 @@ def get_info(gdb_path: os.PathLike | str) -> dict:
     return result
 
 
-
 def list_rasters(gdb_path: os.PathLike | str) -> list[str]:
     """
     Lists all raster datasets within a specified file geodatabase on disk.
@@ -157,6 +157,7 @@ def list_rasters(gdb_path: os.PathLike | str) -> list[str]:
         * https://github.com/rouault/dump_gdbtable/wiki/FGDB-Spec
 
     """
+    # noinspection DuplicatedCode
     gdb_path = os.path.abspath(gdb_path)
     if not os.path.exists(gdb_path):
         raise FileNotFoundError(gdb_path)
@@ -221,10 +222,12 @@ def raster_to_tif(
         raise TypeError(f"{gdb_path} is not a directory")
 
     if tif_path is None:
-        tif_path = os.path.join(os.path.dirname(gdb_path), raster_name + ".tif")
+        tif_path = Path(gdb_path).parent / (raster_name + ".tif")
+    else:
+        tif_path = Path(tif_path)
 
-    if not tif_path.endswith(".tif"):
-        tif_path += ".tif"
+    if not tif_path.suffix == ".tif":
+        tif_path = tif_path.with_suffix(".tif")
 
     gdal.UseExceptions()
     with gdal.Open(f"OpenFileGDB:{gdb_path}:{raster_name}") as raster:

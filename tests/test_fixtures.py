@@ -1,7 +1,7 @@
 import footbridge as ft
 
 
-def test_gdb_fixtures(ft_gdb, esri_gdb):
+def test_gdb_fixtures(ft_gdb, esri_gdb) -> None:
     gdb, _gdb_path = ft_gdb
 
     for this_gdb in [gdb, ft.GeoDatabase(path=esri_gdb)]:
