@@ -11,41 +11,67 @@ version = "*"
 hatchling = "*"
 
 [dependencies]
-python = ">=3.14.4,<4"
-geojson = ">=3.2.0,<4"
-geopandas = ">=1.1.3,<2"
-gdal = ">=3.12.4,<4"
-matplotlib = ">=3.10.9,<4"
-pyarrow = ">=24.0.0,<25"
+gdal = ">=3.13.3,<4"
+geopandas = ">=1.2.0,<2"
+matplotlib = ">=3.11.2,<4"
 xmltodict = ">=1.0.4,<2"
 
 [pypi-dependencies]
 footbridge = { path = ".", editable = true }
 
 [environments]
-default = { features = ["default"], solve-group = "default" }
-dev = { features = ["dev", "docs"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "docs" }
+demo = { features = ["demo"], no-default-feature = true }
 
-[feature.dev.dependencies]
-duckdb = ">=1.5.2,<2"
-pandas-stubs = ">=3.0.0.260204,<4"
-pixi-pycharm = ">=0.0.11,<1"
-pytest = ">=9.0.3,<10"
+[environments.dev.dependencies]
+python = ">=3.15.0,<3.16"
+pandas-stubs = ">=3.0.5.260914,<4"
+pixi-pycharm = ">=0.0.12,<0.0.13"
+pytest = ">=9.1.1,<10"
 pytest-cov = ">=7.1.0,<8"
 pytest-xdist = ">=3.8.0,<4"
-ruff = ">=0.15.11,<1"
-sedonadb = ">=0.3.0,<0.4"
+ruff = ">=0.17.1,<0.18"
+scipy-stubs = ">=1.18.1.1,<2"
+ty = ">=0.0.88,<0.0.89"
+types-geopandas = ">=1.1.4.20261006,<2"
 types-shapely = ">=2.1.0.20260402,<3"
+types-xmltodict = ">=1.0.1.20250920,<2"
 
-[feature.dev.tasks]
+[environments.dev.tasks]
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
-lint = "ruff check ./src ./tests"
-lint-fmt = "ruff check --fix ./src ./tests && ruff format ./src ./tests"
-test = "pytest -n auto ./tests"
+lint = { depends-on = ["lint-ruff", "lint-ty"] }
+lint-ruff = "ruff format ./src ./tests"
+lint-ty = "ty check ./src ./tests"
+test = { cmd = "pytest -n auto ./tests", depends-on = ["lint"] }
 
-[feature.docs]
-# dependencies should match docs/requirements.txt
-dependencies = { jupyter = ">=1.1.1,<2", myst-parser = ">=5.0.0,<6", nbsphinx = ">=0.9.8,<1", notebook = ">=7.5.6,<8", pydata-sphinx-theme = ">=0.17.1,<1", sphinx = ">=9.1.0,<10", sphinx-copybutton = ">=0.5.2,<1" }
-tasks = { docs = "./docs/make html" }
-target = { win-64 = { tasks = { docs = "./docs/make.bat html" } } }
+[environments.docs.dependencies]
+python = ">=3.15.0,<3.16"
+# build deps should match docs/requirements.txt
+jupyter = ">=1.1.1,<2"
+myst-parser = ">=5.1.0,<6"
+nbsphinx = ">=0.9.8,<0.10"
+notebook = ">=7.6.3,<8"
+pydata-sphinx-theme = ">=0.23.0,<0.24"
+sphinx = ">=9.1.0,<10"
+sphinx-copybutton = ">=0.5.2,<0.6"
+
+[environments.docs.tasks]
+docs = "make -C ./docs html"
+
+[environments.docs.target.win-64.tasks]
+docs = "./docs/make.bat html"
+
+[feature.demo]
+platforms = ["win-64"]
+channels = ["esri", "main"]
+dependencies = {
+    python = ">=3.13.16,<3.14",
+    arcpy = ">=3.7,<3.8",
+    gdal = ">=3.13.2,<4"
+}
+pypi-dependencies = {
+    footbridge = { path = ".", editable = true }
+}
+tasks = {
+    demo = "jupyter lab --notebook-dir=./docs/notebooks",
+    demo-headless = "jupyter nbconvert --to notebook --execute --inplace docs/notebooks/*.ipynb"
+}

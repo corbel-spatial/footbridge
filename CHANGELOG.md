@@ -4,11 +4,31 @@
 
 - First stable release
 
-## v1.0.9 (latest)
+## v1.0.11 (latest)
+
+- Full support for Python 3.15
+- Add `footbridge.project`
+- Remove `footbridge.FeatureClass.to_parquet`
+- Many small fixes
+- Update dependencies, remove `pyarrow` and `geojson`
+- Use `ty` for type checking
+- Update example notebooks and add a `demo` pixi env
+- Update CI tooling
+
+## v1.0.10
+
+- Major housecleaning on dead code and refactoring issues
+- Minor actions tweaks
+- Refine dependency pins
+- Avoid pandas copy-on-write errors
+- Republish to conda-forge
+
+## v1.0.9
 
 - Rename/refactor to `footbridge`
 - Documentation and tests updates
-- Squashed the messy commit history down to the just release commits (full history preserved in `main-backup-20260429` branch)
+- Squashed the messy commit history down to the just release commits (full history preserved in `main-backup-20260429`
+  branch)
 - Put GitHub Actions on pause
 
 ## v1.0.8
@@ -23,25 +43,25 @@
 
 ## v1.0.7
 
-- sanitize_gdf_geometry() enforces compatibility with feature class geometries
-- FeatureClass.show() displays a simple plot of the geometry
-- get_info() uses xmltodict rather than GDAL
+- sanitize_gdf_geometry () enforces compatibility with feature class geometries
+- FeatureClass.show () displays a simple plot of the geometry
+- get_info () uses xmltodict rather than GDAL
 - Fixed notebook tables in docs, added ArcPy comparison notebook
 - Test with Python 3.14.0-rc2
 
 ## v1.0.6
 
 - Bumped test docker to Python 3.14.0-rc2
-- Added ouroboros.__version__
+- Added ouroboros. __version__
 - Added getter methods for FeatureClass and FeatureDataset
 - Docs updates
 
 ## v1.0.5
 
 - Dockerfile and GitHub action to test source with Python 3.14.0-rc1
-- Removed FeatureClass.to_arrow() to avoid dependency on Pyarrow
-- Removed function delete_fc() to avoid dependency on Fiona
-- Simplified FeatureClass.calculate()
+- Removed FeatureClass.to_arrow () to avoid dependency on Pyarrow
+- Removed function delete_fc () to avoid dependency on Fiona
+- Simplified FeatureClass.calculate ()
 - Added checks to validate inputs
 - Restructured API documentation
 
@@ -49,7 +69,7 @@
 
 - Tested with Python 3.14.0-rc1
 - GitHub Action to test source against Python prerelease
-- Removed FeatureClass.to_arrow() to avoid dependency on Pyarrow
+- Removed FeatureClass.to_arrow () to avoid dependency on Pyarrow
 
 ## v1.0.3
 
@@ -63,7 +83,7 @@
 
 ## v1.0.1
 
-- FeatureClass.calculate()
+- FeatureClass.calculate ()
 - Instantiating a FeatureClass from an existing DataFrame uses a deep copy
 - Updated README.md and docs
 
@@ -75,14 +95,14 @@
 - Added data manipulation methods FeatureClass to help with processing
 - Pass FeatureClass and FeatureDataset sequences on instantiation
 - Getter methods return dicts instead of tuples
-- Provided more details with get_info()
+- Provided more details with get_info ()
 - Dev environment setup/test/build batch scripts
 - Added TODO.md list for long-term goals
 
 ## 1.0.0-beta7
 
 - Pass kwargs to the GeoTIFF write operation
-- Added get_info() and list_rasters() utility functions
+- Added get_info () and list_rasters () utility functions
 - Docs additions and updates
 - CI cross-platform testing fixes
 
@@ -99,13 +119,13 @@
 ## 1.0.0-beta4
 
 - Major refactor:
-  - Dropped arcpy as a dependency
-  - Rereleased as ouroboros-gis on PyPI to reflect dropping arcpy, and archived ouroboros-arcpy
-  - Added GeoDatabase and FeatureDataset classes for OOP flexibility
-  - Using GeoPandas under the hood
-  - Added FeatureClass export methods to various formats (shp, geojson, arrow, etc.)
-  - Removed extraneous requirements files
-  - Reverse engineered feature datasets for `ouroboros.list_datasets` function
+    - Dropped arcpy as a dependency
+    - Rereleased as ouroboros-gis on PyPI to reflect dropping arcpy, and archived ouroboros-arcpy
+    - Added GeoDatabase and FeatureDataset classes for OOP flexibility
+    - Using GeoPandas under the hood
+    - Added FeatureClass export methods to various formats (shp, geojson, arrow, etc.)
+    - Removed extraneous requirements files
+    - Reverse engineered feature datasets for `ouroboros.list_datasets` function
 - README and documentation updates
 - Added GitHub actions for cross-platform testing, black, pylint, and coverage
 - Skipping v1.0.0b3 to re-upload to PyPI
@@ -118,7 +138,7 @@
 
 - Initial release as ouroboros-arcpy in PyPI
 - Proof of concept class `ouroboros.core.FeatureClass`
-- Test suite (pytest) 
+- Test suite (pytest)
 - Sample data geodatabase
-- Jupyter notebook with basic examples 
+- Jupyter notebook with basic examples
 - Documentation
