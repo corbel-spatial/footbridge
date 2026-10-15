@@ -4,7 +4,25 @@
 
 - First stable release
 
-## v1.0.9 (latest)
+## v1.0.11 (latest)
+
+- Full support for Python 3.15
+- Add `footbridge.project`
+- Remove `footbridge.FeatureClass.to_parquet`
+- Many small fixes
+- Update dependencies, remove `pyarrow` and `geojson`
+- Use `ty` for type checking
+- Update example notebooks
+
+## v1.0.10 (latest)
+
+- Major housecleaning on dead code and refactoring issues
+- Minor actions tweaks
+- Refine dependency pins
+- Avoid pandas copy-on-write errors
+- Republish to conda-forge
+
+## v1.0.9
 
 - Rename/refactor to `footbridge`
 - Documentation and tests updates
