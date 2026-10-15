@@ -14,7 +14,7 @@
 - Use `ty` for type checking
 - Update example notebooks
 
-## v1.0.10 (latest)
+## v1.0.10
 
 - Major housecleaning on dead code and refactoring issues
 - Minor actions tweaks
