@@ -10,5 +10,6 @@ from ._core import list_layers as list_layers
 from ._geoprocessing import buffer as buffer
 from ._geoprocessing import clip as clip
 from ._geoprocessing import overlay as overlay
+from ._geoprocessing import project as project
 
 __version__ = _version("footbridge")

@@ -13,6 +13,7 @@ from uuid import uuid4
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pyogrio
 import pyproj
 import shapely
 from matplotlib import pyplot as plt
@@ -103,7 +104,10 @@ class FeatureClass(MutableSequence):
         else:
             raise TypeError((src, type(src)))
 
-        self._geom_type, self._data = sanitize_gdf_geometry(self._data)
+        if isinstance(self._data, gpd.GeoDataFrame):
+            self._geom_type, self._data = sanitize_gdf_geometry(self._data)
+
+        self._data.columns = self._data.columns.astype(str)
 
     def __delitem__(self, index) -> None:
         """
@@ -213,6 +217,9 @@ class FeatureClass(MutableSequence):
 
         if not isinstance(column, (int, str)):
             raise TypeError("Column index must be an integer or a string")
+
+        if isinstance(column, int):
+            column = str(self._data.columns[column])
 
         self._data.at[row, column] = value
 
@@ -373,7 +380,9 @@ class FeatureClass(MutableSequence):
         """
         return FeatureClass(self._data.copy(deep=True))
 
-    def head(self, n: int = 10, silent: bool = False) -> gpd.GeoDataFrame:
+    def head(
+        self, n: int = 10, silent: bool = False, geometry: bool = True
+    ) -> gpd.GeoDataFrame:
         """
         Returns the first `n` rows of the FeatureClass and prints them if `silent` is False.
 
@@ -381,12 +390,16 @@ class FeatureClass(MutableSequence):
         :type n: int
         :param silent: If True, suppresses printing the retrieved rows, defaults to False
         :type silent: bool
+        :param geometry: If True, suppresses printing the geometry column, defaults to False
+        :type geometry: bool
 
         :return: A GeoDataFrame containing the first `n` rows
         :rtype: geopandas.GeoDataFrame
 
         """
         h = self._data.head(n)
+        if not geometry and h.active_geometry_name:
+            h = h.drop(columns=h.active_geometry_name)
         if not silent:
             print(h)
         return h
@@ -529,17 +542,19 @@ class FeatureClass(MutableSequence):
         else:
             columns = [columns]
 
-        # only geometry was requested
-        if columns == "geometry" or (len(columns) == 1 and columns[0] == "geometry"):
-            return FeatureClass(self._data.geometry)
+        if self._data.active_geometry_name:
+            geom_name: str = self._data.active_geometry_name
+            # only geometry was requested
+            if columns == geom_name or (len(columns) == 1 and columns[0] == geom_name):
+                return FeatureClass(self._data.geometry)
 
-        # geometry and other columns requested
-        if len(columns) >= 1 and "geometry" in columns:
-            columns.remove("geometry")
-            geometry = True
+            # geometry and other columns requested
+            if len(columns) >= 1 and geom_name in columns:
+                columns.remove(geom_name)
+                geometry = True
 
-        if geometry:
-            columns.append("geometry")
+            if geometry:
+                columns.append(geom_name)
 
         if len(columns) == 1:
             columns = columns[0]
@@ -596,17 +611,30 @@ class FeatureClass(MutableSequence):
         fp: str | os.PathLike[str] | None = None,
         indent: None | int = None,
         **kwargs,
-    ) -> dict:
-        gjs = json.loads(self._data.to_json(**kwargs))
+    ) -> dict[str, Any]:
+        if self._data.active_geometry_name:
+            gjs = json.loads(self._data.to_json(**kwargs))
 
-        if fp:
-            fp = Path(fp)
-            if not fp.suffix in (".json", ".geojson"):
-                fp = fp.with_suffix(".geojson")
-            with open(fp, "w") as f:
-                json.dump(gjs, f, indent=indent)
+            if fp:
+                fp = Path(fp)
+                if not fp.suffix in (".json", ".geojson"):
+                    fp = fp.with_suffix(".geojson")
+                with open(fp, "w") as f:
+                    json.dump(gjs, f, indent=indent)
 
-        return gjs
+            return gjs
+        else:
+            df = pd.DataFrame(self._data)
+            js = json.loads(df.to_json(**kwargs))
+
+            if fp:
+                fp = Path(fp)
+                if not fp.suffix != ".json":
+                    fp = fp.with_suffix(".json")
+                with open(fp, "w") as f:
+                    json.dump(js, f, indent=indent)
+
+            return js
 
     def to_shp(self, fp: str | os.PathLike[str], **kwargs) -> None:
         fp = Path(fp)
@@ -666,7 +694,7 @@ class FeatureDataset(MutableMapping):
             for fc_name, fc in contents.items():
                 self.__setitem__(fc_name, fc)
 
-    def __delitem__(self, key, /):
+    def __delitem__(self, key, /) -> None:
         """
         Remove the FeatureClass from the FeatureDataset.
 
@@ -713,7 +741,7 @@ class FeatureDataset(MutableMapping):
         """
         return iter(self._data.fcs)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         :return: The number of FeatureClass objects in the FeatureDataset
         :rtype: int
@@ -954,7 +982,7 @@ class GeoDatabase(MutableMapping):
         """
         return iter(self._data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         :return: The count of FeatureClass objects contained in the GeoDatabase
         :rtype int:
@@ -1264,12 +1292,15 @@ def fc_to_gdf(
     :raises TypeError: If `fc_name` is not a string
 
     """
+    gdb_path = Path(gdb_path).absolute().as_posix()
+
     if not isinstance(fc_name, str):
         raise TypeError("Feature class name must be a string")
 
     with warnings.catch_warnings():  # hide pyogrio driver warnings
         warnings.simplefilter("ignore")
         gdf: gpd.GeoDataFrame = gpd.read_file(gdb_path, layer=fc_name)
+
     gdf = gdf.rename_axis("ObjectID")  # use ObjectID as dataframe index
 
     return gdf
@@ -1322,12 +1353,6 @@ def gdf_to_fc(
                 f"{fc_name} data must be geopandas.GeoDataFrame or geopandas.GeoSeries"
             )
 
-    layer_options = {
-        "TARGET_ARCGIS_VERSION": bool(compatibility),
-        "OPENFILEGDB_IN_MEMORY_SPI": bool(reindex),
-        "FEATURE_DATASET": feature_dataset if feature_dataset else None,
-    }
-
     if os.path.exists(gdb_path):
         if fc_name in list_layers(gdb_path) and not overwrite:
             raise FileExistsError(
@@ -1341,8 +1366,20 @@ def gdf_to_fc(
     gdf["ObjectID"] = gdf["ObjectID"].astype(np.int32)
     gdf["ObjectID"] = gdf["ObjectID"] + 1
 
+    # set options
+    layer_options = {
+        "TARGET_ARCGIS_VERSION": "ALL" if compatibility else "ARCGIS_PRO_3_2_OR_LATER",
+    }
+    if feature_dataset != "" and feature_dataset is not None:
+        layer_options["FEATURE_DATASET"] = feature_dataset
+    pyogrio.set_gdal_config_options(
+        {"OPENFILEGDB_IN_MEMORY_SPI": "YES" if reindex else "NO"}
+    )
+
     try:
-        with warnings.catch_warnings():  # hide pyogrio driver warnings
+        with (
+            warnings.catch_warnings(),
+        ):  # hide pyogrio driver warnings
             warnings.simplefilter("ignore")
             gdf.to_file(
                 filename=gdb_path,

@@ -8,7 +8,7 @@ from pyogrio.errors import GeometryError
 import footbridge as ft
 
 
-def test_fc_to_json(tmp_path, ft_gdb):
+def test_fc_to_json(tmp_path, ft_gdb) -> None:
     gdb, gdb_path = ft_gdb
     for fc_name in gdb.fc_dict:
         gjs = ft.utils.fc_to_json(gdb_path, fc_name)
@@ -22,7 +22,7 @@ def test_fc_to_json(tmp_path, ft_gdb):
         ft.utils.fc_to_json(gdb_path, fc_name, fp, indent=2)
 
 
-def test_fc_to_shp(tmp_path, ft_gdb):
+def test_fc_to_shp(tmp_path, ft_gdb) -> None:
     gdb, gdb_path = ft_gdb
     for fc_name in gdb.fc_dict:
         fp = str(tmp_path / fc_name) + ".shp"
@@ -32,7 +32,7 @@ def test_fc_to_shp(tmp_path, ft_gdb):
         ft.utils.fc_to_shp(gdb_path, fc_name, fp)
 
 
-def test_fc_to_gdf(ft_gdb):
+def test_fc_to_gdf(ft_gdb) -> None:
     _gdb, gdb_path = ft_gdb
     for fc in ft.utils.list_layers(gdb_path):
         gdf = ft.utils.fc_to_gdf(gdb_path, fc)
@@ -41,7 +41,7 @@ def test_fc_to_gdf(ft_gdb):
         ft.utils.fc_to_gdf(gdb_path, 0)  # ty: ignore[invalid-argument-type]
 
 
-def test_gdf_to_fc(ft_gdb):
+def test_gdf_to_fc(ft_gdb) -> None:
     gdb, gdb_path = ft_gdb
     count = 0
     for fds in gdb.values():
@@ -70,7 +70,7 @@ def test_gdf_to_fc(ft_gdb):
         ft._core.gdf_to_fc([], gdb_path, "test")  # ty: ignore[invalid-argument-type]
 
     with pytest.raises(TypeError):
-        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite="yes")  # ty: ignore[invalid-argument-type]
+        ft._core.gdf_to_fc(gpd.GeoDataFrame, "test", "test", overwrite=True)  # ty: ignore[invalid-argument-type]
 
     ft._core.gdf_to_fc(
         gpd.GeoSeries([shapely.LineString([(0, 1), (1, 1)])]),
@@ -80,7 +80,7 @@ def test_gdf_to_fc(ft_gdb):
     )
 
 
-def test_get_info(tmp_path, esri_gdb):
+def test_get_info(tmp_path, esri_gdb) -> None:
     gdb = ft.GeoDatabase(
         contents={
             "fds": ft.FeatureDataset(
@@ -114,7 +114,7 @@ def test_get_info(tmp_path, esri_gdb):
             ft.utils.get_info(os.path.join("..", "pyproject.toml"))
 
 
-def test_list_datasets(ft_gdb, esri_gdb):
+def test_list_datasets(ft_gdb, esri_gdb) -> None:
     _gdb, gdb_path = ft_gdb
     fds1 = ft.utils.list_datasets(gdb_path)
     assert len(fds1) == 2
@@ -136,7 +136,7 @@ def test_list_datasets(ft_gdb, esri_gdb):
             ft.utils.list_datasets(os.path.join("..", "pyproject.toml"))
 
 
-def test_list_layers(ft_gdb):
+def test_list_layers(ft_gdb) -> None:
     _gdb, gdb_path = ft_gdb
     lyrs = ft.utils.list_layers(gdb_path)
     assert len(lyrs) == 6
@@ -151,7 +151,7 @@ def test_list_layers(ft_gdb):
             ft.utils.list_layers(os.path.join("..", "pyproject.toml"))
 
 
-def test_list_rasters(ft_gdb, esri_gdb):
+def test_list_rasters(ft_gdb, esri_gdb) -> None:
     rasters = ft.utils.list_rasters(esri_gdb)
     assert len(rasters) == 1
     for raster in rasters:
@@ -171,7 +171,7 @@ def test_list_rasters(ft_gdb, esri_gdb):
             ft.utils.list_rasters(os.path.join("..", "pyproject.toml"))
 
 
-def test_raster_to_tif(tmp_path, capsys, esri_gdb, gdal_version):
+def test_raster_to_tif(tmp_path, capsys, esri_gdb, gdal_version) -> None:
     if not gdal_version:
         with pytest.raises(ImportError):
             ft.utils.raster_to_tif(
@@ -204,7 +204,7 @@ def test_raster_to_tif(tmp_path, capsys, esri_gdb, gdal_version):
         )
 
 
-def test_version():
+def test_version() -> None:
     version = ft.__version__
     assert isinstance(version, str)
     assert "." in version

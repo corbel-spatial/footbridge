@@ -29,8 +29,9 @@ pixi-pycharm = ">=0.0.12,<0.0.13"
 pytest = ">=9.1.1,<10"
 pytest-cov = ">=7.1.0,<8"
 pytest-xdist = ">=3.8.0,<4"
-ruff = ">=0.17.0,<0.18"
-ty = ">=0.0.87,<0.0.88"
+ruff = ">=0.17.1,<0.18"
+scipy-stubs = ">=1.18.1.1,<2"
+ty = ">=0.0.88,<0.0.89"
 types-geopandas = ">=1.1.4.20261006,<2"
 types-shapely = ">=2.1.0.20260402,<3"
 types-xmltodict = ">=1.0.1.20250920,<2"
@@ -63,13 +64,14 @@ docs = "./docs/make.bat html"
 platforms = ["win-64"]
 channels = ["esri", "main"]
 dependencies = {
-    python = "3.13.*",
-    arcpy = "3.7.*",
-    gdal = ">=3,<4"
+    python = ">=3.13.16,<3.14",
+    arcpy = ">=3.7,<3.8",
+    gdal = ">=3.13.2,<4"
 }
 pypi-dependencies = {
     footbridge = { path = ".", editable = true }
 }
 tasks = {
-    demo = "jupyter nbconvert --to notebook --execute --inplace docs/notebooks/*.ipynb"
+    demo = "jupyter lab --notebook-dir=./docs/notebooks",
+    demo-headless = "jupyter nbconvert --to notebook --execute --inplace docs/notebooks/*.ipynb"
 }

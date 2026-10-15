@@ -6,7 +6,7 @@ import shapely
 import footbridge as ft
 
 
-def test_buffer(ft_gdb):
+def test_buffer(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     for fc in gdb.fcs:
         with pytest.warns(UserWarning):
@@ -15,7 +15,7 @@ def test_buffer(ft_gdb):
     # fc_buffered.show()
 
 
-def test_clip(ft_gdb):
+def test_clip(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     fc1 = gdb["test_polygons1"]
     fc2 = gdb["test_polygons2"]
@@ -24,7 +24,7 @@ def test_clip(ft_gdb):
     # fc_clipped.show()
 
 
-def test_overlay(ft_gdb):
+def test_overlay(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
     fc1 = gdb["test_polygons1"]
     fc2 = gdb["test_polygons2"]
@@ -33,7 +33,27 @@ def test_overlay(ft_gdb):
     # fc_overlaid.show()
 
 
-def test_add_fcs(gdf_points, gdf_lines, gdf_polygons):
+def test_project(ft_gdb) -> None:
+    gdb, _gdb_path = ft_gdb
+    fc1 = gdb["test_polygons1"]
+
+    fc_projected1 = ft.project(fc=fc1, epsg=3857, crs="EPSG:4326")
+    assert isinstance(fc_projected1, ft.FeatureClass)
+    assert fc_projected1.crs == "EPSG:3857"
+
+    fc_projected2 = ft.project(fc=fc1, crs="EPSG:3857")
+    assert isinstance(fc_projected2, ft.FeatureClass)
+    assert fc_projected2.crs == "EPSG:3857"
+
+    fc_projected3 = ft.project(fc=fc1, epsg=3857)
+    assert isinstance(fc_projected3, ft.FeatureClass)
+    assert fc_projected3.crs == "EPSG:3857"
+
+    with pytest.raises(ValueError):
+        ft.project(fc=fc1)
+
+
+def test_add_fcs(gdf_points, gdf_lines, gdf_polygons) -> None:
     gdb1 = ft.GeoDatabase()
     fc1 = ft.FeatureClass(src=gdf_points)
     fc2 = ft.FeatureClass(src=gdf_lines)
@@ -56,7 +76,7 @@ def test_add_fcs(gdf_points, gdf_lines, gdf_polygons):
         gdb1["bad"]["fc_1"] = fc1  # ty: ignore[invalid-assignment]
 
 
-def test_add_fds(gdf_points, gdf_lines, gdf_polygons):
+def test_add_fds(gdf_points, gdf_lines, gdf_polygons) -> None:
     gdb1 = ft.GeoDatabase()
     fc1 = ft.FeatureClass(src=gdf_points)
     fc2 = ft.FeatureClass(src=gdf_lines)
@@ -88,7 +108,7 @@ def test_add_fds(gdf_points, gdf_lines, gdf_polygons):
         gdb1["fds1"]["bad"]["fc_1"] = fc1  # ty: ignore[invalid-argument-type, invalid-assignment]
 
 
-def test_iters(ft_gdb):
+def test_iters(ft_gdb) -> None:
     gdb, _gdb_path = ft_gdb
 
     for fds in gdb.values():
@@ -112,7 +132,7 @@ def test_iters(ft_gdb):
             assert isinstance(fc, ft.FeatureClass)
 
 
-def test_sanitize_gdf_geometry(gdf_points, gdf_lines, gdf_polygons):
+def test_sanitize_gdf_geometry(gdf_points, gdf_lines, gdf_polygons) -> None:
     with pytest.raises(TypeError):
         ft._core.sanitize_gdf_geometry(pd.DataFrame())  # ty: ignore[invalid-argument-type]
 

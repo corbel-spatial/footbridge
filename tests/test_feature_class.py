@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 import shapely
 from pyproj.crs import CRS
+from scipy.stats import geom
 
 import footbridge as ft
 
@@ -91,6 +92,9 @@ def test_setitem(gdf_points) -> None:
     with pytest.raises(TypeError):
         fc1[(0, {})] = None  # ty: ignore[invalid-assignment]
 
+    for c in fc1._data.columns:
+        assert isinstance(c, str)
+
 
 def test_crs(ft_gdb) -> None:
     gdb, _ = ft_gdb
@@ -130,6 +134,7 @@ def test_geometry(gdf_polygons) -> None:
     assert isinstance(fc1.geometry, gpd.GeoSeries)
     assert isinstance(fc1.geometry.bounds, pd.DataFrame)
     with pytest.raises(AttributeError):
+        # noinspection property-access
         fc1.geometry = False  # ty: ignore[invalid-assignment]
 
     fc2 = ft.FeatureClass()
@@ -200,11 +205,22 @@ def test_copy(gdf_points) -> None:
 
 
 def test_head(gdf_points) -> None:
-    fc1 = ft.FeatureClass(gdf_points)
-    fc1.head(0, silent=False)
-    h = fc1.head(5, silent=True)
-    assert isinstance(h, pd.DataFrame)
-    assert len(h) == 5
+    fc1 = ft.FeatureClass(src=gdf_points)
+    h1 = fc1.head(n=5, silent=False, geometry=True)
+    assert isinstance(h1, pd.DataFrame)
+    assert len(h1) == 5
+    assert h1.active_geometry_name == "geometry"
+
+    fc2 = ft.FeatureClass(src=gdf_points)
+    h2 = fc2.head(n=5, silent=True, geometry=False)
+    assert isinstance(h2, pd.DataFrame)
+    assert len(h2) == 5
+    with pytest.raises(AttributeError):
+        _ = h2.active_geometry_name
+    # check for mutation of the original fc
+    assert fc2._data.active_geometry_name == "geometry"
+    assert fc2.geometry is not None
+    assert len(fc2.geometry) == 1000
 
 
 def test_insert(gdf_points, samples) -> None:
@@ -400,11 +416,18 @@ def test_sort(gdf_points) -> None:
 def test_to_json(tmp_path, gdf_points) -> None:
     fc1 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts.geojson")
-    fc1.to_json(fp, indent=2)
+    js1 = fc1.to_json(fp, indent=2)
+    assert isinstance(js1, dict)
 
     fc2 = ft.FeatureClass(gdf_points)
     fp = str(tmp_path / "pts")
-    fc2.to_json(fp, indent=2)
+    js2 = fc2.to_json(fp, indent=2)
+    assert isinstance(js2, dict)
+
+    fc3 = ft.FeatureClass()
+    fp = str(tmp_path / "no_geometry")
+    js3 = fc3.to_json(fp, indent=2)
+    assert isinstance(js3, dict)
 
 
 def test_to_shp(tmp_path, gdf_points) -> None:
