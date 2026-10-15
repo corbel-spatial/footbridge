@@ -19,6 +19,9 @@ xmltodict = ">=1.0.4,<2"
 [pypi-dependencies]
 footbridge = { path = ".", editable = true }
 
+[environments]
+demo = { features = ["demo"], no-default-feature = true }
+
 [environments.dev.dependencies]
 python = ">=3.15.0,<3.16"
 pandas-stubs = ">=3.0.5.260914,<4"
@@ -56,8 +59,17 @@ docs = "make -C ./docs html"
 [environments.docs.target.win-64.tasks]
 docs = "./docs/make.bat html"
 
-[environments.demo.target.win-64.dependencies]
-python = ">=3.14.8,<3.15"  # TODO bump to 3.15
-# deps for notebook demos
-duckdb = ">=1.5.6,<2"
-sedonadb = ">=0.5.0,<0.6"
+[feature.demo]
+platforms = ["win-64"]
+channels = ["esri", "main"]
+dependencies = {
+    python = "3.13.*",
+    arcpy = "3.7.*",
+    gdal = ">=3,<4"
+}
+pypi-dependencies = {
+    footbridge = { path = ".", editable = true }
+}
+tasks = {
+    demo = "jupyter nbconvert --to notebook --execute --inplace docs/notebooks/*.ipynb"
+}
