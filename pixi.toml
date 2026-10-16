@@ -43,6 +43,12 @@ lint-ruff = "ruff format ./src ./tests"
 lint-ty = "ty check ./src ./tests"
 test = { cmd = "pytest -n auto ./tests", depends-on = ["lint"] }
 
+[environments.dev.target.win-64.tasks]
+lint-ty = { cmd = "ty check ./src ./tests --extra-search-path .pixi/envs/dev/lib/python/site-packages", depends-on = ["setup-ty"] }
+setup-ty = """
+python -c "import os, pathlib; p = pathlib.Path(os.environ['APPDATA']) / 'ty' / 'ty.toml'; (p.parent.mkdir(parents=True, exist_ok=True), p.write_text('[environment]\\nextra-paths = [\\".pixi/envs/dev/lib/python/site-packages\\"]\\n'), print('Created ' + str(p))) if not p.exists() else print('ty.toml already exists; skipping.')"
+"""
+
 [environments.docs.dependencies]
 python = ">=3.15.0,<3.16"
 # build deps should match docs/requirements.txt
