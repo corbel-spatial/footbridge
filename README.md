@@ -11,7 +11,7 @@
 [![GitHub Actions Workflow Status: macOS](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-macos.yml?label=macOS)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-macos.yml)
 [![GitHub Actions Workflow Status: Black](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/lint.yml?label=ruff)](https://github.com/corbel-spatial/footbridge/actions/workflows/lint.yml)
 [![Test Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fcorbel-spatial%2Ffootbridge%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpytest_coverage.json&query=totals.percent_covered_display&label=coverage%20%25&color=brightgreen)](https://github.com/corbel-spatial/footbridge/actions/workflows/coverage.yml)
-[![GitHub Actions Workflow Status: Test Python Prerelease: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux-pre.yml?label=3.15-pre)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux-pre.yml)
+[![GitHub Actions Workflow Status: Test Python Prerelease: Test Python Prerelease](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux-pre.yml?label=3.16-pre)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux-pre.yml)
 
 # footbridge
 

@@ -23,7 +23,7 @@ footbridge = { path = ".", editable = true }
 demo = { features = ["demo"], no-default-feature = true }
 
 [environments.dev.dependencies]
-python = ">=3.15.0,<3.16"
+python = ">=3.15.1,<3.16"
 pandas-stubs = ">=3.0.5.260914,<4"
 pixi-pycharm = ">=0.0.12,<0.0.13"
 pytest = ">=9.1.1,<10"
@@ -31,7 +31,7 @@ pytest-cov = ">=7.1.0,<8"
 pytest-xdist = ">=3.8.0,<4"
 ruff = ">=0.17.1,<0.18"
 scipy-stubs = ">=1.18.1.1,<2"
-ty = ">=0.0.88,<0.0.89"
+ty = ">=0.0.90,<0.0.91"
 types-geopandas = ">=1.1.4.20261006,<2"
 types-shapely = ">=2.1.0.20260402,<3"
 types-xmltodict = ">=1.0.1.20250920,<2"
@@ -50,14 +50,14 @@ python -c "import os, pathlib; p = pathlib.Path(os.environ['APPDATA']) / 'ty' / 
 """
 
 [environments.docs.dependencies]
-python = ">=3.15.0,<3.16"
+python = ">=3.15.1,<3.16"
 # build deps should match docs/requirements.txt
 jupyter = ">=1.1.1,<2"
 myst-parser = ">=5.1.0,<6"
 nbsphinx = ">=0.9.8,<0.10"
 notebook = ">=7.6.3,<8"
 pydata-sphinx-theme = ">=0.23.0,<0.24"
-sphinx = ">=9.1.0,<10"
+sphinx = ">=9.2.0,<10"
 sphinx-copybutton = ">=0.5.2,<0.6"
 
 [environments.docs.tasks]
