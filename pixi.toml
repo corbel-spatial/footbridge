@@ -39,8 +39,8 @@ types-xmltodict = ">=1.0.1.20250920,<2"
 [environments.dev.tasks]
 coverage = "pytest -n auto --cov=footbridge --cov-report=json:docs/pytest_coverage.json --cov-report=term-missing"
 lint = { depends-on = ["lint-ruff", "lint-ty"] }
-lint-ruff = "ruff format ./src ./tests"
-lint-ty = "ty check ./src ./tests"
+lint-ruff = "ruff check --fix ./src ./tests"
+lint-ty = "ty check --fix ./src ./tests"
 test = { cmd = "pytest -n auto ./tests", depends-on = ["lint"] }
 
 [environments.dev.target.win-64.tasks]
