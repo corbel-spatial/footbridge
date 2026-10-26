@@ -1,3 +1,4 @@
+from copy import deepcopy
 import geopandas as gpd
 import pandas as pd
 import pytest
@@ -247,3 +248,21 @@ def test_sanitize_gdf_geometry(gdf_points, gdf_lines, gdf_polygons) -> None:
             )
         )
         ft._core.sanitize_gdf_geometry(gdf7)
+
+
+def test_rotate(ft_gdb) -> None:
+    gdb, _gdb_path = ft_gdb
+
+    fc1 = gdb["test_points1"]
+    pt1 = (deepcopy(fc1[0].geometry.x[0]), deepcopy(fc1[0].geometry.y[0]))
+
+    fc2 = ft.rotate(fc=fc1, angle=90, origin=(0, 0))
+    pt2 = (deepcopy(fc2[0].geometry.x[0]), deepcopy(fc2[0].geometry.y[0]))
+
+    # check rotation
+    assert pt1[0] == pt2[1]
+    assert pt1[1] == pt2[0] * -1
+
+    # check in-place mutation
+    assert fc1[0].geometry.x[0] == pt1[0]
+    assert fc1[0].geometry.y[0] == pt1[1]

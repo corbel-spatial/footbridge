@@ -11,5 +11,6 @@ from ._geoprocessing import buffer as buffer
 from ._geoprocessing import clip as clip
 from ._geoprocessing import overlay as overlay
 from ._geoprocessing import project as project
+from ._geoprocessing import rotate as rotate
 
 __version__ = _version("footbridge")
