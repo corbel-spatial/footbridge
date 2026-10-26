@@ -40,7 +40,7 @@ def get_dataset(
     if extracted_gdbs:
         original_gdb = extracted_gdbs[0]
         original_gdb.rename(save_fp)
-        print(f"Done!")
+        print("Done!")
         return save_fp.absolute().as_posix()
     else:
         raise FileNotFoundError(

@@ -59,7 +59,7 @@ def fc_to_shp(
     """Wraps geopandas.GeoDataFrame.to_file(filename, driver="ESRI Shapefile")"""
     gdf = fc_to_gdf(gdb_path=gdb_path, fc_name=fc_name)
     fp = Path(fp)
-    if not fp.suffix == ".shp":
+    if fp.suffix != ".shp":
         fp = fp.with_suffix(".shp")
 
     kwargs.pop("driver", None)
@@ -212,7 +212,7 @@ def raster_to_tif(
     else:
         tif_path = Path(tif_path)
 
-    if not tif_path.suffix == ".tif":
+    if tif_path.suffix != ".tif":
         tif_path = tif_path.with_suffix(".tif")
 
     gdal.UseExceptions()

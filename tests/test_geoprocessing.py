@@ -1,4 +1,5 @@
 from copy import deepcopy
+
 import geopandas as gpd
 import pandas as pd
 import pytest
@@ -12,7 +13,7 @@ def test_buffer(ft_gdb) -> None:
     for fc in gdb.fcs:
         with pytest.warns(UserWarning):
             fc_buffered = ft.buffer(fc, 5.0)
-            assert isinstance(fc_buffered, ft.FeatureClass)
+        assert isinstance(fc_buffered, ft.FeatureClass)
     # fc_buffered.show()
 
 

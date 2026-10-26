@@ -41,7 +41,7 @@ class FeatureClass(MutableSequence):
 
     def __init__(
         self,
-        src: "None | str | os.PathLike[str] | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None,  # ty: ignore[unresolved-reference]
+        src: "None | str | os.PathLike[str] | FeatureClass | geopandas.GeoDataFrame | geopandas.GeoSeries | pandas.DataFrame | pandas.Series" = None,  # ty: ignore[unresolved-reference]  # noqa F821
     ):
         """
         Initializes the geospatial data container by parsing the source and extracting
@@ -629,7 +629,7 @@ class FeatureClass(MutableSequence):
 
             if fp:
                 fp = Path(fp)
-                if not fp.suffix != ".json":
+                if fp.suffix == ".json":
                     fp = fp.with_suffix(".json")
                 with open(fp, "w") as f:
                     json.dump(js, f, indent=indent)
@@ -1052,8 +1052,7 @@ class GeoDatabase(MutableMapping):
         """
         fc_names = []
         for fds in self._data.values():
-            for fc_name in fds:
-                fc_names.append(fc_name)
+            fc_names.extend(fds)
         return fc_names
 
     @property
@@ -1064,11 +1063,7 @@ class GeoDatabase(MutableMapping):
 
         Equivalent to :code:`GeoDatabase.fc_dict.values()`
         """
-        fcs = []
-        for fds in self._data.values():
-            for fc in fds.values():
-                fcs.append(fc)
-        return fcs
+        return list(self.fc_dict.values())
 
     @property
     def fds_dict(self) -> dict[str, FeatureDataset]:
@@ -1353,8 +1348,7 @@ def gdf_to_fc(
                 f"{fc_name} data must be geopandas.GeoDataFrame or geopandas.GeoSeries"
             )
 
-    if os.path.exists(gdb_path):
-        if fc_name in list_layers(gdb_path) and not overwrite:
+    if os.path.exists(gdb_path) and fc_name in list_layers(gdb_path) and not overwrite:
             raise FileExistsError(
                 f"{fc_name} already exists. To overwrite it use: gdf_to_fc(gdf, gdb_path, fc_name, overwrite=True"
             )

@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 import shapely
 from pyproj.crs import CRS
-from scipy.stats import geom
 
 import footbridge as ft
 
