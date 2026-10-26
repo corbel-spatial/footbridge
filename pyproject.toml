@@ -1,5 +1,5 @@
 [project]
-version = "1.0.12"
+version = "1.0.13"
 name = "footbridge"
 authors = [{ name = "Peter Von der Porten", email = "dev@corbelspatial.com" }]
 description = "Pythonic geodatabases for spatial data analysis"
