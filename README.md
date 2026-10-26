@@ -4,7 +4,6 @@
 [![Conda - Version](https://img.shields.io/conda/vn/conda-forge/footbridge.svg)](https://anaconda.org/conda-forge/footbridge)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?logo=)](https://github.com/corbel-spatial/footbridge/blob/main/LICENSE)
 [![Pixi](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fprefix-dev%2Fpixi%2Fmain%2Fassets%2Fbadge%2Fv0.json&label=%E2%9C%A8)](https://pixi.sh)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 [![GitHub Actions Workflow Status: Linux](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-linux.yml?label=Linux&logo=linux&logoColor=white)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-linux.yml)
 [![GitHub Actions Workflow Status: Windows](https://img.shields.io/github/actions/workflow/status/corbel-spatial/footbridge/pytest-windows.yml?label=Windows)](https://github.com/corbel-spatial/footbridge/actions/workflows/pytest-windows.yml)

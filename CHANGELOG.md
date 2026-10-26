@@ -4,7 +4,13 @@
 
 - First stable release
 
-## v1.0.11 (latest)
+## v1.0.12 (latest)
+
+- Add `footbridge.rotate`
+- Delint and appease `pandas` deprecation warnings
+- Bump dev and CI dependencies
+
+## v1.0.11
 
 - Full support for Python 3.15
 - Add `footbridge.project`
