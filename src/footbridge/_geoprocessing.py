@@ -36,7 +36,7 @@ def buffer(fc: FeatureClass, distance: float, **kwargs: dict) -> FeatureClass:
         warnings.simplefilter("ignore")
         new_geom = gdf.buffer(distance=distance, **kwargs)  # ty: ignore[invalid-argument-type]
 
-    gdf.set_geometry(new_geom, inplace=True)
+    gdf = gdf.set_geometry(new_geom)
 
     return FeatureClass(gdf)
 

@@ -221,7 +221,7 @@ class FeatureClass(MutableSequence):
         if isinstance(column, int):
             column = str(self._data.columns[column])
 
-        self._data.at[row, column] = value
+        self._data.loc[row, column] = value
 
     @property
     def crs(self) -> pyproj.crs.CRS | None:
@@ -586,7 +586,7 @@ class FeatureClass(MutableSequence):
             2           spam
 
         """
-        return FeatureClass(gpd.GeoDataFrame(self._data.query(expr, inplace=False)))
+        return FeatureClass(gpd.GeoDataFrame(self._data.query(expr)))
 
     def sort(
         self,
@@ -604,7 +604,7 @@ class FeatureClass(MutableSequence):
         :type ascending: bool, optional
 
         """
-        self._data.sort_values(by=field_name, ascending=ascending, inplace=True)
+        self._data = self._data.sort_values(by=field_name, ascending=ascending)
 
     def to_json(
         self,
@@ -1356,7 +1356,7 @@ def gdf_to_fc(
     # convert dataframe index back to ObjectID
     if "ObjectID" not in gdf.columns:
         gdf = gdf.rename_axis("ObjectID")
-    gdf.reset_index(inplace=True)
+    gdf = gdf.reset_index()
     gdf["ObjectID"] = gdf["ObjectID"].astype(np.int32)
     gdf["ObjectID"] = gdf["ObjectID"] + 1
 
