@@ -2,6 +2,7 @@ import warnings
 from typing import Literal
 
 import geopandas as gpd
+import shapely
 
 from ._core import FeatureClass
 
@@ -114,4 +115,37 @@ def project(
     else:
         gdf = fc._data.to_crs(crs=crs, epsg=None, inplace=False)  # ty: ignore[no-matching-overload]
 
+    return FeatureClass(gdf)
+
+
+def rotate(
+    fc: FeatureClass,
+    angle: float,
+    origin: Literal["center", "centroid"]
+    | tuple[float, float]
+    | shapely.Point = "center",
+    use_radians: bool = False,
+) -> FeatureClass:
+    """
+    Rotate features around a point location.
+
+    Wraps geopandas.GeoSeries.rotate().
+
+
+    :param fc: Input feature class to be projected
+    :type fc: FeatureClass
+    :param angle: Rotation angle (defaults to degrees)
+    :type angle: float
+    :param origin: The origin around which to rotate (defaults to "center")
+    :type origin: Literal["center", "centroid"] | tuple[float, float] | shapely.Point
+    :param use_radians: Whether to use radians instead of degrees
+    :type use_radians: bool
+    :return: The rotated feature class
+    :rtype: FeatureClass
+    """
+    if fc.geometry is None:
+        raise RuntimeError()
+
+    new_geom = fc.geometry.rotate(angle=angle, origin=origin, use_radians=use_radians)
+    gdf = gpd.GeoDataFrame(fc, geometry=new_geom)
     return FeatureClass(gdf)
